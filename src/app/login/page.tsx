@@ -10,6 +10,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [autoLogin, setAutoLogin] = useState(false);
   const router = useRouter();
   const { language, setLanguage, t } = useLanguage();
   const [mounted, setMounted] = useState(false);
@@ -29,7 +30,7 @@ export default function LoginPage() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ username, password }),
+        body: JSON.stringify({ username, password, autoLogin }),
       });
 
       const data = await res.json();
@@ -119,6 +120,19 @@ export default function LoginPage() {
               required
               suppressHydrationWarning
             />
+          </div>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '-0.5rem' }}>
+            <input
+              id="autoLogin"
+              type="checkbox"
+              checked={autoLogin}
+              onChange={(e) => setAutoLogin(e.target.checked)}
+              style={{ width: '16px', height: '16px', cursor: 'pointer', accentColor: 'var(--color-primary)' }}
+            />
+            <label htmlFor="autoLogin" style={{ fontSize: '0.9rem', color: 'var(--color-text-muted)', cursor: 'pointer', userSelect: 'none' }}>
+              {t.login.autoLogin}
+            </label>
           </div>
 
           <button

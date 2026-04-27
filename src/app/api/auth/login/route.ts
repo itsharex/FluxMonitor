@@ -6,7 +6,7 @@ import { UserConfig } from '@/lib/types';
 
 export async function POST(request: Request) {
   try {
-    const { username, password } = await request.json();
+    const { username, password, autoLogin } = await request.json();
     const config = getConfig();
 
     const user = (config.users || []).find(
@@ -15,9 +15,12 @@ export async function POST(request: Request) {
 
     if (user) {
       const secretKey = new TextEncoder().encode(config.jwtSecret || 'CHANGE_ME_TO_A_LONG_RANDOM_STRING');
+      const expirationTime = autoLogin ? '365d' : '24h';
+      const maxAge = autoLogin ? 60 * 60 * 24 * 365 : 60 * 60 * 24;
+
       const token = await new SignJWT({ username: user.username })
         .setProtectedHeader({ alg: 'HS256' })
-        .setExpirationTime('24h')
+        .setExpirationTime(expirationTime)
         .sign(secretKey);
 
       const isHttps = request.headers.get('x-forwarded-proto') === 'https' || request.url.startsWith('https://');
@@ -27,7 +30,7 @@ export async function POST(request: Request) {
         httpOnly: true,
         secure: isHttps,
         sameSite: 'lax',
-        maxAge: 60 * 60 * 24, // 1 day
+        maxAge: maxAge,
         path: '/',
       });
 

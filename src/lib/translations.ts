@@ -26,7 +26,8 @@ export const translations = {
       error: '登录失败，请检查用户名或密码。',
       invalidCredentials: '用户名或密码错误。',
       internalError: '服务器内部错误，请稍后再试。',
-      networkError: '网络或服务器错误。'
+      networkError: '网络或服务器错误。',
+      autoLogin: '自动登录'
     },
     common: {
       all: '全部',
@@ -332,6 +333,7 @@ export const translations = {
       size: '大小',
       prune: '清理未使用镜像',
       pruneConfirm: '确定要清理所有未使用的镜像（Prune）吗？',
+      restartConfirm: '确定要重启容器吗？',
       aiDiagnosis: 'AI 诊断日志',
       fetchContainersFailed: '获取容器失败',
       fetchImagesFailed: '获取镜像失败',
@@ -499,7 +501,8 @@ export const translations = {
       error: 'Login failed, please check your credentials.',
       invalidCredentials: 'Invalid username or password.',
       internalError: 'Internal server error, please try again later.',
-      networkError: 'Network or server error.'
+      networkError: 'Network or server error.',
+      autoLogin: 'Auto-login'
     },
     common: {
       all: 'All',
@@ -806,6 +809,7 @@ export const translations = {
       size: 'Size',
       prune: 'Cleanup Unused',
       pruneConfirm: 'Are you sure you want to prune all unused images?',
+      restartConfirm: 'Are you sure you want to restart this container?',
       aiDiagnosis: 'AI Diagnosis',
       fetchContainersFailed: 'Failed to fetch containers',
       fetchImagesFailed: 'Failed to fetch images',

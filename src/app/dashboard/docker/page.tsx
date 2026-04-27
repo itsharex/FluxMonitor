@@ -478,7 +478,7 @@ export default function DockerDashboard() {
                             <>
                               <button
                                 className="btn btn-ghost btn-sm btn-icon" style={{ color: 'var(--color-warning)' }}
-                                onClick={() => handleAction(c.ID, 'restart')} disabled={actionLoading === `${c.ID}-restart`} title={t.common.restart}
+                                onClick={() => { if (window.confirm(t.docker.restartConfirm)) handleAction(c.ID, 'restart'); }} disabled={actionLoading === `${c.ID}-restart`} title={t.common.restart}
                               ><RotateCw size={14} className={actionLoading === `${c.ID}-restart` ? 'animate-spin' : ''} /></button>
                               <button
                                 className="btn btn-ghost btn-sm btn-icon" style={{ color: 'var(--color-danger)' }}
