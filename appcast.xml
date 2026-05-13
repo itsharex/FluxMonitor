@@ -8,7 +8,7 @@
             <sparkle:version>10215</sparkle:version>
             <sparkle:shortVersionString>1.2.15</sparkle:shortVersionString>
             <sparkle:minimumSystemVersion>12.4</sparkle:minimumSystemVersion>
-            <enclosure url="https://github.com/chentao1006/FluxMonitor/releases/download/v1.2.15/FluxMonitor.dmg" length="29074263" type="application/octet-stream" sparkle:edSignature="hr28K0TnV4p62qE9EYTo22B2f198SsPuYv7fDGNu0MauYMJqVGPWTDksd0WfqE3bm3hEEk4FwbbgQYMjoccqAQ=="/>
+            <enclosure url="https://github.com/chentao1006/FluxMonitor/releases/download/v1.2.15/FluxMonitor.dmg" length="29310296" type="application/octet-stream" sparkle:edSignature="/0W9bRc06uNmN+SeGNBHGKEFs+6CtAL+ExVrJdNZzVQ1XpsY2VxNMkJHrtQDqVKpICTNCid4JWkSAOoz0jgKDQ=="/>
         </item>
         <item>
             <title>1.2.14</title>
