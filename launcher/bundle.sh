@@ -1,6 +1,14 @@
 #!/bin/bash
 SPARKLE_BIN_PATH="./Sparkle/bin" # Downloaded during build if missing
 
+# --- Parse Arguments ---
+SKIP_SIGN=false
+for arg in "$@"; do
+    if [ "$arg" == "--no-sign" ] || [ "$arg" == "--skip-sign" ]; then
+        SKIP_SIGN=true
+    fi
+done
+
 # --- Ensure Sparkle tools exist locally ---
 if [ ! -x "${SPARKLE_BIN_PATH}/generate_appcast" ]; then
     echo "⬇️ Sparkle tools not found at ${SPARKLE_BIN_PATH}. Downloading..."
@@ -80,7 +88,7 @@ echo "Team ID: $TEAM_ID"
 echo "Version from package.json: $VERSION"
 
 # Auto-detect Identity and Team ID if not provided
-if [ -z "$IDENTITY" ]; then
+if [ "$SKIP_SIGN" = false ] && [ -z "$IDENTITY" ]; then
     echo "Scanning for signing identity..."
     # Match the first "Developer ID Application" identity for distribution
     IDENTITY=$(security find-identity -v -p codesigning | grep "Developer ID Application" | head -1 | sed -E 's/.*"([^"]+)".*/\1/')
@@ -177,118 +185,130 @@ cp package.json "$APP_DIR/Contents/Resources/package.json"
 
 # Sign the app bundle
 # IDENTITY is either sourced from build.config or auto-detected above
-echo "Performing deep signature..."
-
-# --- CRITICAL FOR iCLOUD: Extract full entitlements from the exported app ---
-# This ensures we keep application-identifier and other keys added by Xcode/Provisioning Profile
-TEMP_ENTITLEMENTS="/tmp/app_entitlements_$(date +%s).plist"
-codesign -d --entitlements :- "$APP_DIR" > "$TEMP_ENTITLEMENTS"
-echo "Extracted full entitlements for re-signing."
-
-# First, sign any injected frameworks or binaries in node_modules
-find "$APP_DIR/Contents/Resources/node_modules" -name "*.node" -o -name "*.dylib" -o -name "*.sh" | while read -r lib; do
-    echo "Signing injected library: $lib"
-    codesign --force --options runtime --timestamp --sign "$IDENTITY" "$lib"
-done
-
-# Then sign Sparkle framework if it exists
-if [ -d "$APP_DIR/Contents/Frameworks/Sparkle.framework" ]; then
-    echo "Signing Sparkle Framework..."
-    # Sign nested components first
-    find "$APP_DIR/Contents/Frameworks/Sparkle.framework" -type f \( -perm -u+x -o -name "*.dylib" \) | while read -r binary; do
-        codesign --force --options runtime --timestamp --sign "$IDENTITY" "$binary"
+if [ "$SKIP_SIGN" = false ]; then
+    echo "Performing deep signature..."
+    
+    # --- CRITICAL FOR iCLOUD: Extract full entitlements from the exported app ---
+    # This ensures we keep application-identifier and other keys added by Xcode/Provisioning Profile
+    TEMP_ENTITLEMENTS="/tmp/app_entitlements_$(date +%s).plist"
+    codesign -d --entitlements :- "$APP_DIR" > "$TEMP_ENTITLEMENTS"
+    echo "Extracted full entitlements for re-signing."
+    
+    # First, sign any injected frameworks or binaries in node_modules
+    find "$APP_DIR/Contents/Resources/node_modules" -name "*.node" -o -name "*.dylib" -o -name "*.sh" | while read -r lib; do
+        echo "Signing injected library: $lib"
+        codesign --force --options runtime --timestamp --sign "$IDENTITY" "$lib"
     done
-    codesign --force --options runtime --timestamp --sign "$IDENTITY" "$APP_DIR/Contents/Frameworks/Sparkle.framework"
+    
+    # Then sign Sparkle framework if it exists
+    if [ -d "$APP_DIR/Contents/Frameworks/Sparkle.framework" ]; then
+        echo "Signing Sparkle Framework..."
+        # Sign nested components first
+        find "$APP_DIR/Contents/Frameworks/Sparkle.framework" -type f \( -perm -u+x -o -name "*.dylib" \) | while read -r binary; do
+            codesign --force --options runtime --timestamp --sign "$IDENTITY" "$binary"
+        done
+        codesign --force --options runtime --timestamp --sign "$IDENTITY" "$APP_DIR/Contents/Frameworks/Sparkle.framework"
+    fi
+    
+    # Finally sign the main app bundle using the EXTRACTED entitlements
+    echo "Finalizing app signature with preserved entitlements..."
+    codesign --force --options runtime --entitlements "$TEMP_ENTITLEMENTS" --timestamp --sign "$IDENTITY" "$APP_DIR"
+    
+    # Cleanup temp entitlements
+    rm -f "$TEMP_ENTITLEMENTS"
+else
+    echo "⏩ Skipping codesigning (--no-sign)..."
 fi
-
-# Finally sign the main app bundle using the EXTRACTED entitlements
-echo "Finalizing app signature with preserved entitlements..."
-codesign --force --options runtime --entitlements "$TEMP_ENTITLEMENTS" --timestamp --sign "$IDENTITY" "$APP_DIR"
-
-# Cleanup temp entitlements
-rm -f "$TEMP_ENTITLEMENTS"
 
 
 # Package into DMG
-echo "Packaging into DMG..."
-
-# Detect if we should use localized name for filename (on Chinese systems)
-LOCALIZED_NAME="$APP_NAME"
-LANGUAGES=$(defaults read -g AppleLanguages)
-if [[ "$LANGUAGES" == *"zh-Hans"* ]] && [ -f "launcher/FluxMonitor/zh-Hans.lproj/InfoPlist.strings" ]; then
-    ZH_NAME=$(grep "CFBundleDisplayName" "launcher/FluxMonitor/zh-Hans.lproj/InfoPlist.strings" | head -1 | awk -F' = ' '{print $2}' | sed 's/[";]//g')
-    if [ ! -z "$ZH_NAME" ]; then
-        LOCALIZED_NAME="$ZH_NAME"
-        echo "Using Localized Product Name: $LOCALIZED_NAME"
-    fi
-fi
-
-# Use English name for filename (without version number)
-SAFE_APP_NAME=$(echo "$APP_NAME" | tr -d ' ')
-DMG_NAME="$SAFE_APP_NAME.dmg"
-rm -f "$BUILD_DIR/$DMG_NAME"
-
-# Create a temporary staging area for DMG content
-STAGING_DIR="$BUILD_DIR/dmg_staging"
-rm -rf "$STAGING_DIR"
-mkdir -p "$STAGING_DIR"
-
-# Copy the app to the staging directory
-cp -R "$APP_DIR" "$STAGING_DIR/"
-
-# Create a symbolic link to /Applications
-ln -s /Applications "$STAGING_DIR/Applications"
-
-# Create the DMG using the staging directory
-hdiutil create -volname "$APP_NAME" -srcfolder "$STAGING_DIR" -ov -format UDZO "$BUILD_DIR/$DMG_NAME"
-
-# Sign the DMG
-echo "Signing DMG..."
-codesign --force --sign "$IDENTITY" "$BUILD_DIR/$DMG_NAME"
-
-# Clean up staging directory
-rm -rf "$STAGING_DIR"
-
-echo "Build complete: $BUILD_DIR/$DMG_NAME"
-
-
-# 4. Notarize DMG if credentials provided
-echo "4. Checking for notarization credentials..."
-DMG_PATH=$(ls $BUILD_DIR/*.dmg | head -1)
-# Use the detected TEAM_ID or fall back if not set
-if [ -z "$TEAM_ID" ]; then
-    TEAM_ID="U2NEAJ73J2"
-fi
-if [ -n "$APPLE_ID" ] && [ -n "$APPLE_PASSWORD" ]; then
-	echo "🔐 Submitting for notarization..."
-	xcrun notarytool submit "${DMG_PATH}" \
-		--apple-id "${APPLE_ID}" \
-		--password "${APPLE_PASSWORD}" \
-		--team-id "${TEAM_ID}" \
-		--wait
-
-	echo "🖋️ Stapling notarization ticket..."
-	xcrun stapler staple "${DMG_PATH}"
+if [ "$SKIP_SIGN" = false ]; then
+    echo "Packaging into DMG..."
     
-	echo "✅ Notarization and stapling complete!"
+    # Detect if we should use localized name for filename (on Chinese systems)
+    LOCALIZED_NAME="$APP_NAME"
+    LANGUAGES=$(defaults read -g AppleLanguages)
+    if [[ "$LANGUAGES" == *"zh-Hans"* ]] && [ -f "launcher/FluxMonitor/zh-Hans.lproj/InfoPlist.strings" ]; then
+        ZH_NAME=$(grep "CFBundleDisplayName" "launcher/FluxMonitor/zh-Hans.lproj/InfoPlist.strings" | head -1 | awk -F' = ' '{print $2}' | sed 's/[";]//g')
+        if [ ! -z "$ZH_NAME" ]; then
+            LOCALIZED_NAME="$ZH_NAME"
+            echo "Using Localized Product Name: $LOCALIZED_NAME"
+        fi
+    fi
+    
+    # Use English name for filename (without version number)
+    SAFE_APP_NAME=$(echo "$APP_NAME" | tr -d ' ')
+    DMG_NAME="$SAFE_APP_NAME.dmg"
+    rm -f "$BUILD_DIR/$DMG_NAME"
+    
+    # Create a temporary staging area for DMG content
+    STAGING_DIR="$BUILD_DIR/dmg_staging"
+    rm -rf "$STAGING_DIR"
+    mkdir -p "$STAGING_DIR"
+    
+    # Copy the app to the staging directory
+    cp -R "$APP_DIR" "$STAGING_DIR/"
+    
+    # Create a symbolic link to /Applications
+    ln -s /Applications "$STAGING_DIR/Applications"
+    
+    # Create the DMG using the staging directory
+    hdiutil create -volname "$APP_NAME" -srcfolder "$STAGING_DIR" -ov -format UDZO "$BUILD_DIR/$DMG_NAME"
+    
+    # Sign the DMG
+    echo "Signing DMG..."
+    codesign --force --sign "$IDENTITY" "$BUILD_DIR/$DMG_NAME"
+    
+    # Clean up staging directory
+    rm -rf "$STAGING_DIR"
+    
+    echo "Build complete: $BUILD_DIR/$DMG_NAME"
+    
+    
+    # 4. Notarize DMG if credentials provided
+    echo "4. Checking for notarization credentials..."
+    DMG_PATH=$(ls $BUILD_DIR/*.dmg | head -1)
+    # Use the detected TEAM_ID or fall back if not set
+    if [ -z "$TEAM_ID" ]; then
+        TEAM_ID="U2NEAJ73J2"
+    fi
+    if [ -n "$APPLE_ID" ] && [ -n "$APPLE_PASSWORD" ]; then
+        echo "🔐 Submitting for notarization..."
+        xcrun notarytool submit "${DMG_PATH}" \
+            --apple-id "${APPLE_ID}" \
+            --password "${APPLE_PASSWORD}" \
+            --team-id "${TEAM_ID}" \
+            --wait
+    
+        echo "🖋️ Stapling notarization ticket..."
+        xcrun stapler staple "${DMG_PATH}"
+        
+        echo "✅ Notarization and stapling complete!"
+    else
+        echo "⚠️ Notarization skipped because APPLE_ID and APPLE_PASSWORD are not set."
+        echo "Please set them to ensure the DMG runs directly on other users' Macs."
+    fi
 else
-	echo "⚠️ Notarization skipped because APPLE_ID and APPLE_PASSWORD are not set."
-	echo "Please set them to ensure the DMG runs directly on other users' Macs."
+    echo "⏩ Skipping DMG packaging and notarization (--no-sign)..."
 fi
 
 
 # 6. Generate Sparkle Appcast (Now automated)
-if [ -x "${SPARKLE_BIN_PATH}/generate_appcast" ]; then
-    echo "📡 Generating Sparkle appcast to project root..."
-    # Use version-specific GitHub download prefix for this new release
-    DOWNLOAD_PREFIX="https://github.com/chentao1006/FluxMonitor/releases/download/v$VERSION/"
-    
-    # We point generate_appcast to the BUILD_DIR where DMG resides, and output to project root
-    # This will be available at https://flux.ct106.com/appcast.xml via GitHub Pages
-    "${SPARKLE_BIN_PATH}/generate_appcast" --download-url-prefix "$DOWNLOAD_PREFIX" -o appcast.xml "${BUILD_DIR}"
-    
-    echo "✅ appcast.xml generated."
+if [ "$SKIP_SIGN" = false ]; then
+    if [ -x "${SPARKLE_BIN_PATH}/generate_appcast" ]; then
+        echo "📡 Generating Sparkle appcast to project root..."
+        # Use version-specific GitHub download prefix for this new release
+        DOWNLOAD_PREFIX="https://github.com/chentao1006/FluxMonitor/releases/download/v$VERSION/"
+        
+        # We point generate_appcast to the BUILD_DIR where DMG resides, and output to project root
+        # This will be available at https://flux.ct106.com/appcast.xml via GitHub Pages
+        "${SPARKLE_BIN_PATH}/generate_appcast" --download-url-prefix "$DOWNLOAD_PREFIX" -o appcast.xml "${BUILD_DIR}"
+        
+        echo "✅ appcast.xml generated."
+    else
+        echo "❌ Sparkle generate_appcast tool still missing at ${SPARKLE_BIN_PATH}."
+        exit 1
+    fi
 else
-    echo "❌ Sparkle generate_appcast tool still missing at ${SPARKLE_BIN_PATH}."
-    exit 1
+    echo "⏩ Skipping appcast generation (--no-sign)..."
 fi

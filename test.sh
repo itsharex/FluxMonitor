@@ -16,9 +16,9 @@ if [[ "$*" == *"--fast"* ]] || [[ "$*" == *"-f"* ]]; then
 fi
 
 if [ "$SKIP_BUILD" = false ]; then
-    echo "📦 1. Building the app using bundle.sh..."
+    echo "📦 1. Building the app using bundle.sh (no signing)..."
     chmod +x ./launcher/bundle.sh
-    ./launcher/bundle.sh
+    ./launcher/bundle.sh --no-sign
 else
     echo "⏩ Skipping build step (--fast)..."
 fi
