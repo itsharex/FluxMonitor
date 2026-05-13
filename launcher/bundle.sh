@@ -126,6 +126,8 @@ xcodebuild archive \
     -scheme "$SCHEME_NAME" \
     -configuration Release \
     -archivePath "$BUILD_DIR/$APP_NAME.xcarchive" \
+    ARCHS="arm64 x86_64" \
+    ONLY_ACTIVE_ARCH=NO \
     CODE_SIGN_STYLE=Automatic \
     -allowProvisioningUpdates \
     AD_HOC_CODE_SIGNING_ALLOWED=YES \

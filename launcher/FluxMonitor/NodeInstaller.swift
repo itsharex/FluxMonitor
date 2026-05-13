@@ -176,14 +176,11 @@ class NodeInstaller: ObservableObject {
     }
     
     private func getArchitecture() -> String {
-        var systemInfo = utsname()
-        uname(&systemInfo)
-        let machineMirror = Mirror(reflecting: systemInfo.machine)
-        let identifier = machineMirror.children.reduce("") { identifier, element in
-            guard let value = element.value as? Int8, value != 0 else { return identifier }
-            return identifier + String(UnicodeScalar(UInt8(value)))
-        }
-        return identifier == "arm64" ? "arm64" : "x64"
+        #if arch(arm64)
+        return "arm64"
+        #else
+        return "x64"
+        #endif
     }
     
     fileprivate func handleDownloadFinish(url: URL) {
