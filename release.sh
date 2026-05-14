@@ -1,6 +1,10 @@
 #!/bin/bash
 set -e
 
+# remove all http proxy
+export HTTP_PROXY=""
+export HTTPS_PROXY=""
+
 # =========================================================================
 # Release Script for Flux Monitor
 # 1. Builds the Next.js frontend in standalone mode
@@ -59,8 +63,8 @@ if [ -z "$APP_PATH" ]; then
     exit 1
 fi
 
-NEW_VERSION=$(defaults read "$(pwd)/$APP_PATH/Contents/Info.plist" CFBundleShortVersionString)
-NEW_BUILD=$(defaults read "$(pwd)/$APP_PATH/Contents/Info.plist" CFBundleVersion)
+NEW_VERSION=$(defaults read "$PWD/$APP_PATH/Contents/Info.plist" CFBundleShortVersionString)
+NEW_BUILD=$(defaults read "$PWD/$APP_PATH/Contents/Info.plist" CFBundleVersion)
 
 echo "📦 Version: $NEW_VERSION (Build $NEW_BUILD)"
 
