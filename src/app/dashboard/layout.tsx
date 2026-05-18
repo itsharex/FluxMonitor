@@ -121,6 +121,7 @@ export default function DashboardLayout({
           <nav className="nav-list no-scrollbar">
             {features?.monitor !== false && <NavLink href="/dashboard" icon="activity" onClick={() => setIsMenuOpen(false)}>{t.sidebar.monitor}</NavLink>}
             {features?.processes !== false && <NavLink href="/dashboard/processes" icon="layers" onClick={() => setIsMenuOpen(false)}>{t.sidebar.processes}</NavLink>}
+            {features?.ports !== false && <NavLink href="/dashboard/ports" icon="network" onClick={() => setIsMenuOpen(false)}>{t.sidebar.ports}</NavLink>}
             {features?.logs !== false && <NavLink href="/dashboard/logs" icon="file-text" onClick={() => setIsMenuOpen(false)}>{t.sidebar.logs}</NavLink>}
             {features?.configs !== false && <NavLink href="/dashboard/configs" icon="settings" onClick={() => setIsMenuOpen(false)}>{t.sidebar.configs}</NavLink>}
             {features?.launchagent !== false && <NavLink href="/dashboard/launchagent" icon="rocket" onClick={() => setIsMenuOpen(false)}>{t.sidebar.launchagent}</NavLink>}
@@ -304,6 +305,7 @@ function NavLink({ href, children, icon, onClick, isIconOnly, title }: { href: s
       case 'file-text': return <><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></>;
       case 'activity': return <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>;
       case 'layers': return <><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></>;
+      case 'network': return <><rect x="16" y="16" width="6" height="6" rx="1"></rect><rect x="2" y="16" width="6" height="6" rx="1"></rect><rect x="9" y="2" width="6" height="6" rx="1"></rect><path d="M5 16v-3a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v3"></path><path d="M12 8v8"></path></>;
       default: return null;
     }
   }

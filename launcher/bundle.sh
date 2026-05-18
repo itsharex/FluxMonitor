@@ -4,11 +4,13 @@ SPARKLE_BIN_PATH="./Sparkle/bin" # Downloaded during build if missing
 # --- Parse Arguments ---
 SKIP_SIGN=false
 DISABLE_TIMESTAMP=${DISABLE_CODE_SIGN_TIMESTAMP:-false}
+TIMESTAMP_DISABLED_REASON="requested by --no-timestamp or DISABLE_CODE_SIGN_TIMESTAMP"
 for arg in "$@"; do
     if [ "$arg" == "--no-sign" ] || [ "$arg" == "--skip-sign" ]; then
         SKIP_SIGN=true
     elif [ "$arg" == "--no-timestamp" ] || [ "$arg" == "--skip-timestamp" ]; then
         DISABLE_TIMESTAMP=true
+        TIMESTAMP_DISABLED_REASON="requested by command line option"
     fi
 done
 
@@ -45,7 +47,7 @@ XCODE_CODE_SIGN_FLAGS="--timestamp"
 if [ "$DISABLE_TIMESTAMP" = true ]; then
     CODE_SIGN_TIMESTAMP_ARGS=(--timestamp=none)
     XCODE_CODE_SIGN_FLAGS="--timestamp=none"
-    echo "⏱️ Code signing timestamp is disabled for this build."
+    echo "⏱️ Code signing timestamp is disabled for this build ($TIMESTAMP_DISABLED_REASON)."
 fi
 
 # Auto-detect Project/Scheme
@@ -157,6 +159,7 @@ if ! xcodebuild archive \
     if [ "$DISABLE_TIMESTAMP" != true ] && grep -qi "timestamp service is not available" "$ARCHIVE_LOG"; then
         echo "⚠️ Apple timestamp service is unavailable during archive. Retrying archive without timestamp..."
         DISABLE_TIMESTAMP=true
+        TIMESTAMP_DISABLED_REASON="archive code signing failed to get an Apple timestamp"
         CODE_SIGN_TIMESTAMP_ARGS=(--timestamp=none)
         XCODE_CODE_SIGN_FLAGS="--timestamp=none"
         rm -rf "$BUILD_DIR/$APP_NAME.xcarchive"
@@ -187,6 +190,7 @@ if ! xcodebuild -exportArchive \
     if [ "$DISABLE_TIMESTAMP" != true ] && grep -qi "timestamp service is not available" "$EXPORT_LOG"; then
         echo "⚠️ Apple timestamp service is unavailable. Retrying export without timestamp..."
         DISABLE_TIMESTAMP=true
+        TIMESTAMP_DISABLED_REASON="export code signing failed to get an Apple timestamp"
         CODE_SIGN_TIMESTAMP_ARGS=(--timestamp=none)
         XCODE_CODE_SIGN_FLAGS="--timestamp=none"
         rm -rf "$BUILD_DIR/Release"
@@ -331,7 +335,7 @@ if [ "$SKIP_SIGN" = false ]; then
         TEAM_ID="U2NEAJ73J2"
     fi
     if [ "$DISABLE_TIMESTAMP" = true ]; then
-        echo "⚠️ Notarization skipped because code signing timestamp is disabled."
+        echo "⚠️ Notarization skipped because code signing timestamp is disabled ($TIMESTAMP_DISABLED_REASON)."
         echo "For a public release, rerun when Apple's timestamp service is available."
     elif [ -n "$APPLE_ID" ] && [ -n "$APPLE_PASSWORD" ]; then
         echo "🔐 Submitting for notarization..."

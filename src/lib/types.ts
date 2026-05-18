@@ -12,6 +12,7 @@ export interface AIConfig {
 export interface FeaturesConfig {
   monitor?: boolean;
   processes?: boolean;
+  ports?: boolean;
   logs?: boolean;
   configs?: boolean;
   launchagent?: boolean;

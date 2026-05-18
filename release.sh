@@ -28,9 +28,12 @@ if [ -n "$NEW_VERSION_PROMPT" ]; then
 fi
 
 UPLOAD_ONLY=false
+PUBLISH_BREW=true
 for arg in "$@"; do
     if [ "$arg" == "--upload-only" ] || [ "$arg" == "-u" ]; then
         UPLOAD_ONLY=true
+    elif [ "$arg" == "--no-brew" ] || [ "$arg" == "--skip-brew" ]; then
+        PUBLISH_BREW=false
     fi
 done
 
@@ -125,8 +128,15 @@ if command -v gh >/dev/null 2>&1; then
     
     if [ $? -eq 0 ]; then
         echo "🎉 Release completed successfully!"
+        if [ "$PUBLISH_BREW" = true ]; then
+            echo "🍺 Updating Homebrew tap..."
+            ./release-to-brew.sh "$DMG_PATH" "$NEW_VERSION"
+        else
+            echo "⏩ Skipping Homebrew tap update (--no-brew)."
+        fi
     else
         echo "❌ Error: GitHub Release failed to create. Please check the error above."
+        exit 1
     fi
 else
     echo "⚠️  Note: GitHub CLI (gh) not found or not authenticated. Please upload $DMG_PATH and appcast.xml manually to the GitHub release page."

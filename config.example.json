@@ -14,6 +14,7 @@
   "features": {
     "monitor": true,
     "processes": true,
+    "ports": true,
     "logs": true,
     "configs": true,
     "launchagent": true,
