@@ -3,9 +3,12 @@ SPARKLE_BIN_PATH="./Sparkle/bin" # Downloaded during build if missing
 
 # --- Parse Arguments ---
 SKIP_SIGN=false
+DISABLE_TIMESTAMP=${DISABLE_CODE_SIGN_TIMESTAMP:-false}
 for arg in "$@"; do
     if [ "$arg" == "--no-sign" ] || [ "$arg" == "--skip-sign" ]; then
         SKIP_SIGN=true
+    elif [ "$arg" == "--no-timestamp" ] || [ "$arg" == "--skip-timestamp" ]; then
+        DISABLE_TIMESTAMP=true
     fi
 done
 
@@ -35,6 +38,15 @@ if [ ! -x "${SPARKLE_BIN_PATH}/generate_appcast" ]; then
 fi
 
 set -e
+set -o pipefail
+
+CODE_SIGN_TIMESTAMP_ARGS=(--timestamp)
+XCODE_CODE_SIGN_FLAGS="--timestamp"
+if [ "$DISABLE_TIMESTAMP" = true ]; then
+    CODE_SIGN_TIMESTAMP_ARGS=(--timestamp=none)
+    XCODE_CODE_SIGN_FLAGS="--timestamp=none"
+    echo "⏱️ Code signing timestamp is disabled for this build."
+fi
 
 # Auto-detect Project/Scheme
 PROJECT="launcher/FluxMonitor.xcodeproj"
@@ -129,7 +141,8 @@ fi
 # Build the app (produces .app directly)
 echo "Building project..."
 mkdir -p "$BUILD_DIR"
-xcodebuild archive \
+ARCHIVE_LOG="$BUILD_DIR/archive.log"
+if ! xcodebuild archive \
     -project "$PROJECT" \
     -scheme "$SCHEME_NAME" \
     -configuration Release \
@@ -139,13 +152,58 @@ xcodebuild archive \
     CODE_SIGN_STYLE=Automatic \
     -allowProvisioningUpdates \
     AD_HOC_CODE_SIGNING_ALLOWED=YES \
-    ENABLE_HARDENED_RUNTIME=YES
+    ENABLE_HARDENED_RUNTIME=YES \
+    OTHER_CODE_SIGN_FLAGS="$XCODE_CODE_SIGN_FLAGS" 2>&1 | tee "$ARCHIVE_LOG"; then
+    if [ "$DISABLE_TIMESTAMP" != true ] && grep -qi "timestamp service is not available" "$ARCHIVE_LOG"; then
+        echo "⚠️ Apple timestamp service is unavailable during archive. Retrying archive without timestamp..."
+        DISABLE_TIMESTAMP=true
+        CODE_SIGN_TIMESTAMP_ARGS=(--timestamp=none)
+        XCODE_CODE_SIGN_FLAGS="--timestamp=none"
+        rm -rf "$BUILD_DIR/$APP_NAME.xcarchive"
+        xcodebuild archive \
+            -project "$PROJECT" \
+            -scheme "$SCHEME_NAME" \
+            -configuration Release \
+            -archivePath "$BUILD_DIR/$APP_NAME.xcarchive" \
+            ARCHS="arm64 x86_64" \
+            ONLY_ACTIVE_ARCH=NO \
+            CODE_SIGN_STYLE=Automatic \
+            -allowProvisioningUpdates \
+            AD_HOC_CODE_SIGNING_ALLOWED=YES \
+            ENABLE_HARDENED_RUNTIME=YES \
+            OTHER_CODE_SIGN_FLAGS="$XCODE_CODE_SIGN_FLAGS"
+    else
+        exit 1
+    fi
+fi
 
-xcodebuild -exportArchive \
+EXPORT_LOG="$BUILD_DIR/exportArchive.log"
+if ! xcodebuild -exportArchive \
     -archivePath "$BUILD_DIR/$APP_NAME.xcarchive" \
     -exportPath "$BUILD_DIR/Release" \
     -exportOptionsPlist "launcher/ExportOptions.plist" \
-    -allowProvisioningUpdates
+    -allowProvisioningUpdates \
+    OTHER_CODE_SIGN_FLAGS="$XCODE_CODE_SIGN_FLAGS" 2>&1 | tee "$EXPORT_LOG"; then
+    if [ "$DISABLE_TIMESTAMP" != true ] && grep -qi "timestamp service is not available" "$EXPORT_LOG"; then
+        echo "⚠️ Apple timestamp service is unavailable. Retrying export without timestamp..."
+        DISABLE_TIMESTAMP=true
+        CODE_SIGN_TIMESTAMP_ARGS=(--timestamp=none)
+        XCODE_CODE_SIGN_FLAGS="--timestamp=none"
+        rm -rf "$BUILD_DIR/Release"
+        if ! xcodebuild -exportArchive \
+            -archivePath "$BUILD_DIR/$APP_NAME.xcarchive" \
+            -exportPath "$BUILD_DIR/Release" \
+            -exportOptionsPlist "launcher/ExportOptions.plist" \
+            -allowProvisioningUpdates \
+            OTHER_CODE_SIGN_FLAGS="$XCODE_CODE_SIGN_FLAGS"; then
+            echo "⚠️ Export without timestamp still failed. Copying app from archive and continuing with script signing..."
+            mkdir -p "$BUILD_DIR/Release"
+            cp -R "$BUILD_DIR/$APP_NAME.xcarchive/Products/Applications/$APP_NAME.app" "$BUILD_DIR/Release/"
+        fi
+    else
+        exit 1
+    fi
+fi
 
 # Final App Dir (xcodebuild build puts it in SYMROOT/Release/...)
 APP_DIR="$BUILD_DIR/Release/$APP_NAME.app"
@@ -197,7 +255,7 @@ if [ "$SKIP_SIGN" = false ]; then
     # First, sign any injected frameworks or binaries in node_modules
     find "$APP_DIR/Contents/Resources/node_modules" -name "*.node" -o -name "*.dylib" -o -name "*.sh" | while read -r lib; do
         echo "Signing injected library: $lib"
-        codesign --force --options runtime --timestamp --sign "$IDENTITY" "$lib"
+        codesign --force --options runtime "${CODE_SIGN_TIMESTAMP_ARGS[@]}" --sign "$IDENTITY" "$lib"
     done
     
     # Then sign Sparkle framework if it exists
@@ -205,14 +263,14 @@ if [ "$SKIP_SIGN" = false ]; then
         echo "Signing Sparkle Framework..."
         # Sign nested components first
         find "$APP_DIR/Contents/Frameworks/Sparkle.framework" -type f \( -perm -u+x -o -name "*.dylib" \) | while read -r binary; do
-            codesign --force --options runtime --timestamp --sign "$IDENTITY" "$binary"
+            codesign --force --options runtime "${CODE_SIGN_TIMESTAMP_ARGS[@]}" --sign "$IDENTITY" "$binary"
         done
-        codesign --force --options runtime --timestamp --sign "$IDENTITY" "$APP_DIR/Contents/Frameworks/Sparkle.framework"
+        codesign --force --options runtime "${CODE_SIGN_TIMESTAMP_ARGS[@]}" --sign "$IDENTITY" "$APP_DIR/Contents/Frameworks/Sparkle.framework"
     fi
     
     # Finally sign the main app bundle using the EXTRACTED entitlements
     echo "Finalizing app signature with preserved entitlements..."
-    codesign --force --options runtime --entitlements "$TEMP_ENTITLEMENTS" --timestamp --sign "$IDENTITY" "$APP_DIR"
+    codesign --force --options runtime --entitlements "$TEMP_ENTITLEMENTS" "${CODE_SIGN_TIMESTAMP_ARGS[@]}" --sign "$IDENTITY" "$APP_DIR"
     
     # Cleanup temp entitlements
     rm -f "$TEMP_ENTITLEMENTS"
@@ -272,7 +330,10 @@ if [ "$SKIP_SIGN" = false ]; then
     if [ -z "$TEAM_ID" ]; then
         TEAM_ID="U2NEAJ73J2"
     fi
-    if [ -n "$APPLE_ID" ] && [ -n "$APPLE_PASSWORD" ]; then
+    if [ "$DISABLE_TIMESTAMP" = true ]; then
+        echo "⚠️ Notarization skipped because code signing timestamp is disabled."
+        echo "For a public release, rerun when Apple's timestamp service is available."
+    elif [ -n "$APPLE_ID" ] && [ -n "$APPLE_PASSWORD" ]; then
         echo "🔐 Submitting for notarization..."
         xcrun notarytool submit "${DMG_PATH}" \
             --apple-id "${APPLE_ID}" \

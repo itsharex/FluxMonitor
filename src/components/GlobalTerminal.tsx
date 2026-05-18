@@ -20,6 +20,7 @@ const defaultQuickCommandSpecs: Array<{ labelKey: QuickCommandKey; cmd: string }
   { labelKey: 'cpuSort', cmd: 'ps -e -o pcpu,comm | sort -rn | head -n 10' },
   { labelKey: 'ip', cmd: 'ifconfig | grep "inet " | grep -v 127.0.0.1' },
   { labelKey: 'ports', cmd: 'lsof -i -P | grep LISTEN' },
+  { labelKey: 'portUsage', cmd: 'PORT=3000; lsof -nP -iTCP:$PORT -sTCP:LISTEN' },
   { labelKey: 'uptime', cmd: 'uptime' },
   { labelKey: 'brew', cmd: 'brew list --versions' },
   { labelKey: 'vers', cmd: 'sw_vers' },
