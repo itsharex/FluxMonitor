@@ -10,6 +10,10 @@
 
 [![下载 macOS 版](https://img.shields.io/badge/下载-macOS%20版-000000?style=for-the-badge&logo=apple&logoColor=white)](https://github.com/chentao1006/FluxMonitor/releases/latest/download/FluxMonitor.dmg)
 
+```bash
+brew install --cask chentao1006/tap/flux-monitor
+```
+
 **iOS 客户端:** 
 
 [![Download on the App Store](public/app-store-badge-zh.svg)](https://apps.apple.com/app/flux-remote/id6761290185)
@@ -56,7 +60,7 @@
 - **安装**: 将 **Flux Monitor** 拖入 **Applications** (应用程序) 文件夹。
 - **启动**: 打开应用程序即可开启监控面板。
 
-### 2. Homebrew Cask
+#### Homebrew Cask
 也可以通过 Homebrew 安装 macOS 启动器：
 
 ```bash
@@ -70,7 +74,7 @@ brew tap chentao1006/tap
 brew install --cask flux-monitor
 ```
 
-### 3. iOS 客户端 (移动端)
+### 2. iOS 客户端 (移动端)
 在 iPhone 或 iPad 上随时随地监控和管理您的服务器。
 
 [![Download on the App Store](public/app-store-badge-zh.svg)](https://apps.apple.com/app/flux-remote/id6761290185)

@@ -10,6 +10,10 @@ A system monitoring and management dashboard designed for **Macs running as serv
 
 [![Download on macOS](https://img.shields.io/badge/Download-macOS-000000?style=for-the-badge&logo=apple&logoColor=white)](https://github.com/chentao1006/FluxMonitor/releases/latest/download/FluxMonitor.dmg)
 
+```bash
+brew install --cask chentao1006/tap/flux-monitor
+```
+
 **iOS Client:** 
 
 [![Download on the App Store](public/app-store-badge-en.svg)](https://apps.apple.com/app/flux-remote/id6761290185)
@@ -58,7 +62,7 @@ The easiest way to use Flux Monitor on macOS is by downloading the application. 
 - **Install**: Drag **Flux Monitor** to your **Applications** folder.
 - **Launch**: Open the app to start the monitoring dashboard.
 
-### 2. Homebrew Cask
+#### Homebrew Cask
 You can also install the macOS launcher with Homebrew:
 
 ```bash
@@ -72,7 +76,7 @@ brew tap chentao1006/tap
 brew install --cask flux-monitor
 ```
 
-### 3. iOS Client (Mobile-side)
+### 2. iOS Client (Mobile-side)
 Monitor and manage your server from anywhere using your iPhone or iPad.
 
 [![Download on the App Store](public/app-store-badge-en.svg)](https://apps.apple.com/app/flux-remote/id6761290185)
