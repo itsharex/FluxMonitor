@@ -1,17 +1,80 @@
 "use client";
 
-import { useState, useRef, useEffect } from 'react';
-import { Terminal, X, Square, Sparkles, Brain, Play } from 'lucide-react';
+import { useState, useRef, useEffect, useMemo, useCallback } from 'react';
+import { Terminal, X, Square, Sparkles, Brain, Play, Settings, Plus, Trash2, ArrowUp, ArrowDown, Save, RotateCcw } from 'lucide-react';
 import { useLanguage } from '@/lib/LanguageContext';
+import { translations } from '@/lib/translations';
 import { useSettings } from '@/lib/SettingsContext';
+import { QuickCommand } from '@/lib/types';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import Link from 'next/link';
 import { streamAiContent } from '@/lib/aiStream';
 
+type QuickCommandKey = keyof typeof translations.zh.monitor.quickCmds;
+
+const defaultQuickCommandSpecs: Array<{ labelKey: QuickCommandKey; cmd: string }> = [
+  { labelKey: 'ls', cmd: 'ls -FhG' },
+  { labelKey: 'df', cmd: 'df -h' },
+  { labelKey: 'memSort', cmd: 'ps -e -o pmem,comm | sort -rn | head -n 10' },
+  { labelKey: 'cpuSort', cmd: 'ps -e -o pcpu,comm | sort -rn | head -n 10' },
+  { labelKey: 'ip', cmd: 'ifconfig | grep "inet " | grep -v 127.0.0.1' },
+  { labelKey: 'ports', cmd: 'lsof -i -P | grep LISTEN' },
+  { labelKey: 'uptime', cmd: 'uptime' },
+  { labelKey: 'brew', cmd: 'brew list --versions' },
+  { labelKey: 'vers', cmd: 'sw_vers' },
+  { labelKey: 'procCount', cmd: 'ps aux | wc -l' },
+  { labelKey: 'space', cmd: 'du -sh ~/* | sort -rh | head -n 5' },
+  { labelKey: 'downloads', cmd: 'ls -lt ~/Downloads | head -n 5' },
+  { labelKey: 'arch', cmd: 'uname -m' },
+  { labelKey: 'who', cmd: 'who' },
+  { labelKey: 'dns', cmd: 'cat /etc/resolv.conf' },
+  { labelKey: 'memDetail', cmd: 'vm_stat' },
+  { labelKey: 'netStat', cmd: 'netstat -an | grep ESTABLISHED | head -n 10' },
+  { labelKey: 'topProc', cmd: 'top -l 1 -s 0 -n 10' },
+  { labelKey: 'battery', cmd: 'pmset -g batt' },
+  { labelKey: 'cpuInfo', cmd: 'sysctl machdep.cpu.brand_string' },
+  { labelKey: 'arp', cmd: 'arp -a | head -n 10' },
+];
+
+const defaultLabelByKey = (labelKey: QuickCommandKey) => [
+  translations.zh.monitor.quickCmds[labelKey],
+  translations.en.monitor.quickCmds[labelKey],
+];
+
+const isQuickCommandKey = (key: string): key is QuickCommandKey => {
+  return defaultQuickCommandSpecs.some(item => item.labelKey === key);
+};
+
+const inferDefaultLabelKey = (command: QuickCommand) => {
+  if (command.labelKey && isQuickCommandKey(command.labelKey)) {
+    const spec = defaultQuickCommandSpecs.find(item => item.labelKey === command.labelKey);
+    if (spec?.cmd === command.cmd.trim() && defaultLabelByKey(command.labelKey).includes(command.label.trim())) {
+      return command.labelKey;
+    }
+  }
+  const spec = defaultQuickCommandSpecs.find(item => item.cmd === command.cmd.trim());
+  if (!spec) return undefined;
+  return defaultLabelByKey(spec.labelKey).includes(command.label.trim()) ? spec.labelKey : undefined;
+};
+
+const normalizeQuickCommands = (commands: QuickCommand[]) => {
+  return commands
+    .map(item => {
+      const cmd = item.cmd.trim();
+      const labelKey = inferDefaultLabelKey({ ...item, cmd });
+      return {
+        label: item.label.trim(),
+        ...(labelKey ? { labelKey } : {}),
+        cmd,
+      };
+    })
+    .filter(item => item.label && item.cmd);
+};
+
 export default function GlobalTerminal() {
   const { t } = useLanguage();
-  const { config } = useSettings();
+  const { config, updateConfig } = useSettings();
   const [isOpen, setIsOpen] = useState(false);
   const [cmd, setCmd] = useState('');
   const [cmdResult, setCmdResult] = useState('');
@@ -19,33 +82,43 @@ export default function GlobalTerminal() {
   const [aiLoading, setAiLoading] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysisResult, setAnalysisResult] = useState('');
+  const [quickCommands, setQuickCommands] = useState<QuickCommand[]>([]);
+  const [draftQuickCommands, setDraftQuickCommands] = useState<QuickCommand[]>([]);
+  const [isManagingQuickCommands, setIsManagingQuickCommands] = useState(false);
+  const [isSavingQuickCommands, setIsSavingQuickCommands] = useState(false);
+  const [quickCommandError, setQuickCommandError] = useState('');
   const terminalRef = useRef<HTMLDivElement>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
   const aiCacheRef = useRef<Record<string, string>>({});
 
-  const quickCommands = [
-    { label: t.monitor.quickCmds.ls, cmd: 'ls -FhG' },
-    { label: t.monitor.quickCmds.df, cmd: 'df -h' },
-    { label: t.monitor.quickCmds.memSort, cmd: 'ps -e -o pmem,comm | sort -rn | head -n 10' },
-    { label: t.monitor.quickCmds.cpuSort, cmd: 'ps -e -o pcpu,comm | sort -rn | head -n 10' },
-    { label: t.monitor.quickCmds.ip, cmd: 'ifconfig | grep "inet " | grep -v 127.0.0.1' },
-    { label: t.monitor.quickCmds.ports, cmd: 'lsof -i -P | grep LISTEN' },
-    { label: t.monitor.quickCmds.uptime, cmd: 'uptime' },
-    { label: t.monitor.quickCmds.brew, cmd: 'brew list --versions' },
-    { label: t.monitor.quickCmds.vers, cmd: 'sw_vers' },
-    { label: t.monitor.quickCmds.procCount, cmd: 'ps aux | wc -l' },
-    { label: t.monitor.quickCmds.space, cmd: 'du -sh ~/* | sort -rh | head -n 5' },
-    { label: t.monitor.quickCmds.downloads, cmd: 'ls -lt ~/Downloads | head -n 5' },
-    { label: t.monitor.quickCmds.arch, cmd: 'uname -m' },
-    { label: t.monitor.quickCmds.who, cmd: 'who' },
-    { label: t.monitor.quickCmds.dns, cmd: 'cat /etc/resolv.conf' },
-    { label: t.monitor.quickCmds.memDetail, cmd: 'vm_stat' },
-    { label: t.monitor.quickCmds.netStat, cmd: 'netstat -an | grep ESTABLISHED | head -n 10' },
-    { label: t.monitor.quickCmds.topProc, cmd: 'top -l 1 -s 0 -n 10' },
-    { label: t.monitor.quickCmds.battery, cmd: 'pmset -g batt' },
-    { label: t.monitor.quickCmds.cpuInfo, cmd: 'sysctl machdep.cpu.brand_string' },
-    { label: t.monitor.quickCmds.arp, cmd: 'arp -a | head -n 10' },
-  ];
+  const getQuickCommandLabel = useCallback((command: QuickCommand) => {
+    return command.labelKey && isQuickCommandKey(command.labelKey)
+      ? t.monitor.quickCmds[command.labelKey]
+      : command.label;
+  }, [t]);
+
+  const defaultQuickCommands = useMemo<QuickCommand[]>(() => (
+    defaultQuickCommandSpecs.map(item => ({
+      label: t.monitor.quickCmds[item.labelKey],
+      labelKey: item.labelKey,
+      cmd: item.cmd,
+    }))
+  ), [t]);
+
+  useEffect(() => {
+    const hasConfiguredCommands = Array.isArray(config?.terminalQuickCommands);
+    const nextCommands = hasConfiguredCommands
+      ? normalizeQuickCommands(config.terminalQuickCommands || [])
+      : defaultQuickCommands;
+    const localizedCommands = nextCommands.map(item => ({
+      ...item,
+      label: getQuickCommandLabel(item),
+    }));
+    setQuickCommands(localizedCommands);
+    if (!isManagingQuickCommands) {
+      setDraftQuickCommands(localizedCommands);
+    }
+  }, [config?.terminalQuickCommands, defaultQuickCommands, getQuickCommandLabel, isManagingQuickCommands]);
 
   useEffect(() => {
     if (terminalRef.current) {
@@ -71,6 +144,78 @@ export default function GlobalTerminal() {
       abortControllerRef.current = null;
     }
     setIsExecuting(false);
+  };
+
+  const saveQuickCommands = async (commands: QuickCommand[], closeEditor = false) => {
+    const nextCommands = normalizeQuickCommands(commands);
+    setIsSavingQuickCommands(true);
+    setQuickCommandError('');
+
+    try {
+      const response = await fetch('/api/settings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ terminalQuickCommands: nextCommands }),
+      });
+      const data = await response.json();
+      if (!response.ok || !data.success) {
+        throw new Error(data.error || t.monitor.quickCommandSaveFailed);
+      }
+      const nextConfig = config
+        ? { ...config, terminalQuickCommands: nextCommands }
+        : { users: [], ai: {}, features: {}, terminalQuickCommands: nextCommands };
+      updateConfig(nextConfig);
+      const localizedCommands = nextCommands.map(item => ({
+        ...item,
+        label: getQuickCommandLabel(item),
+      }));
+      setQuickCommands(localizedCommands);
+      setDraftQuickCommands(localizedCommands);
+      if (closeEditor) {
+        setIsManagingQuickCommands(false);
+      }
+    } catch (error) {
+      const message = error instanceof Error ? error.message : t.monitor.quickCommandSaveFailed;
+      setQuickCommandError(`${t.monitor.quickCommandSaveFailed}: ${message}`);
+    } finally {
+      setIsSavingQuickCommands(false);
+    }
+  };
+
+  const updateDraftQuickCommand = (index: number, field: keyof QuickCommand, value: string) => {
+    setDraftQuickCommands(prev => prev.map((item, itemIndex) => (
+      itemIndex === index
+        ? normalizeQuickCommands([{ ...item, [field]: value }])[0] || { ...item, [field]: value }
+        : item
+    )));
+  };
+
+  const moveDraftQuickCommand = (index: number, direction: -1 | 1) => {
+    setDraftQuickCommands(prev => {
+      const targetIndex = index + direction;
+      if (targetIndex < 0 || targetIndex >= prev.length) return prev;
+      const next = [...prev];
+      [next[index], next[targetIndex]] = [next[targetIndex], next[index]];
+      return next;
+    });
+  };
+
+  const addDraftQuickCommand = () => {
+    setDraftQuickCommands(prev => [...prev, { label: '', cmd: '' }]);
+  };
+
+  const removeDraftQuickCommand = (index: number) => {
+    setDraftQuickCommands(prev => prev.filter((_, itemIndex) => itemIndex !== index));
+  };
+
+  const resetDraftQuickCommands = () => {
+    setDraftQuickCommands(defaultQuickCommands);
+  };
+
+  const openQuickCommandManager = () => {
+    setDraftQuickCommands(quickCommands);
+    setQuickCommandError('');
+    setIsManagingQuickCommands(true);
   };
 
   const executeCommand = async (e: React.FormEvent) => {
@@ -315,24 +460,152 @@ export default function GlobalTerminal() {
         {/* Modal Content */}
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', padding: '1.5rem', overflow: 'hidden', gap: '1rem' }}>
           {/* Quick Commands */}
-          <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
-            {quickCommands.map((q, i) => (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
+            <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap', alignItems: 'center' }}>
+              {quickCommands.map((q, i) => (
+                <button
+                  key={`${q.label}-${q.cmd}-${i}`}
+                  type="button"
+                  className="btn btn-ghost btn-sm"
+                  onClick={() => setCmd(q.cmd)}
+                  style={{ 
+                    fontSize: '0.75rem', 
+                    padding: '0.3rem 0.6rem', 
+                    background: 'rgba(59, 130, 246, 0.06)', 
+                    color: 'var(--color-primary)',
+                    borderRadius: '6px'
+                  }}
+                >
+                  {q.label}
+                </button>
+              ))}
               <button
-                key={i}
                 type="button"
                 className="btn btn-ghost btn-sm"
-                onClick={() => setCmd(q.cmd)}
-                style={{ 
-                  fontSize: '0.75rem', 
-                  padding: '0.3rem 0.6rem', 
-                  background: 'rgba(59, 130, 246, 0.06)', 
-                  color: 'var(--color-primary)',
-                  borderRadius: '6px'
+                onClick={openQuickCommandManager}
+                style={{
+                  fontSize: '0.75rem',
+                  padding: '0.3rem 0.6rem',
+                  border: '1px solid var(--color-surface-border)',
+                  borderRadius: '6px',
+                  display: 'flex',
+                  gap: '0.35rem',
                 }}
               >
-                {q.label}
+                <Settings size={13} /> {t.monitor.quickCommandManage}
               </button>
-            ))}
+            </div>
+
+            {isManagingQuickCommands && (
+              <div
+                style={{
+                  border: '1px solid var(--color-surface-border)',
+                  background: 'var(--color-surface-bg)',
+                  borderRadius: 'var(--radius-md)',
+                  padding: '0.75rem',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '0.6rem',
+                  maxHeight: '260px',
+                  overflow: 'hidden',
+                }}
+              >
+                <div
+                  style={{
+                    display: 'flex',
+                    gap: '0.5rem',
+                    justifyContent: 'space-between',
+                    flexWrap: 'wrap',
+                    flex: '0 0 auto',
+                    paddingBottom: '0.6rem',
+                    borderBottom: '1px solid var(--color-surface-border)',
+                  }}
+                >
+                  <div style={{ display: 'flex', gap: '0.5rem' }}>
+                    <button type="button" className="btn btn-ghost btn-sm" onClick={addDraftQuickCommand}>
+                      <Plus size={14} style={{ marginRight: 4 }} /> {t.monitor.quickCommandAdd}
+                    </button>
+                    <button type="button" className="btn btn-ghost btn-sm" onClick={resetDraftQuickCommands}>
+                      <RotateCcw size={14} style={{ marginRight: 4 }} /> {t.monitor.quickCommandReset}
+                    </button>
+                  </div>
+                  <div style={{ display: 'flex', gap: '0.5rem' }}>
+                    <button
+                      type="button"
+                      className="btn btn-ghost btn-sm"
+                      onClick={() => {
+                        setDraftQuickCommands(quickCommands);
+                        setIsManagingQuickCommands(false);
+                      }}
+                      disabled={isSavingQuickCommands}
+                    >
+                      {t.common.cancel}
+                    </button>
+                    <button
+                      type="button"
+                      className="btn btn-primary btn-sm"
+                      onClick={() => saveQuickCommands(draftQuickCommands, true)}
+                      disabled={isSavingQuickCommands}
+                    >
+                      <Save size={14} style={{ marginRight: 4 }} /> {isSavingQuickCommands ? t.common.saving : t.monitor.quickCommandDone}
+                    </button>
+                  </div>
+                </div>
+                {quickCommandError && (
+                  <div style={{ color: 'var(--color-danger)', fontSize: '0.8rem', flex: '0 0 auto' }}>{quickCommandError}</div>
+                )}
+                <div
+                  style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '0.5rem',
+                    overflowY: 'auto',
+                    minHeight: 0,
+                    paddingRight: '0.15rem',
+                  }}
+                >
+                  {draftQuickCommands.map((item, index) => (
+                    <div
+                      key={index}
+                      style={{
+                        display: 'grid',
+                        gridTemplateColumns: 'minmax(90px, 0.7fr) minmax(180px, 1.8fr) auto',
+                        gap: '0.5rem',
+                        alignItems: 'center',
+                      }}
+                    >
+                      <input
+                        type="text"
+                        className="input"
+                        value={item.label}
+                        onChange={(e) => updateDraftQuickCommand(index, 'label', e.target.value)}
+                        placeholder={t.monitor.quickCommandLabel}
+                        style={{ height: '34px', fontSize: '0.8rem' }}
+                      />
+                      <input
+                        type="text"
+                        className="input"
+                        value={item.cmd}
+                        onChange={(e) => updateDraftQuickCommand(index, 'cmd', e.target.value)}
+                        placeholder={t.monitor.quickCommandCommand}
+                        style={{ height: '34px', fontSize: '0.8rem', fontFamily: 'monospace' }}
+                      />
+                      <div style={{ display: 'flex', gap: '0.25rem' }}>
+                        <button type="button" className="btn btn-ghost btn-sm" onClick={() => moveDraftQuickCommand(index, -1)} disabled={index === 0} style={{ padding: '0.25rem' }} title="Move up">
+                          <ArrowUp size={14} />
+                        </button>
+                        <button type="button" className="btn btn-ghost btn-sm" onClick={() => moveDraftQuickCommand(index, 1)} disabled={index === draftQuickCommands.length - 1} style={{ padding: '0.25rem' }} title="Move down">
+                          <ArrowDown size={14} />
+                        </button>
+                        <button type="button" className="btn btn-ghost btn-sm" onClick={() => removeDraftQuickCommand(index)} style={{ padding: '0.25rem', color: 'var(--color-danger)' }} title={t.common.delete}>
+                          <Trash2 size={14} />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Command Input Form */}

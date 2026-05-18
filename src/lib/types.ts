@@ -25,6 +25,12 @@ export interface DeployConfig {
   port: number;
 }
 
+export interface QuickCommand {
+  label: string;
+  labelKey?: string;
+  cmd: string;
+}
+
 export interface AppConfig {
   users: UserConfig[];
   jwtSecret?: string;
@@ -34,4 +40,5 @@ export interface AppConfig {
   version?: string;
   customConfigs?: string[];
   customLogs?: string[];
+  terminalQuickCommands?: QuickCommand[];
 }
