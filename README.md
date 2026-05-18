@@ -19,6 +19,7 @@ A system monitoring and management dashboard designed for **Macs running as serv
 
 - **System Monitor**: Display CPU, memory, disk, and network usage, run terminal commands.
 - **Process Management**: View running processes and monitor resource consumption.
+- **Port Manager**: Inspect listening and active ports, trace owning processes, and release occupied ports.
 - **Log Analysis**: Browse system logs.
 - **Configuration Management**: Edit system configuration files.
 - **LaunchAgent**: Manage macOS LaunchAgents and LaunchDaemons.
@@ -57,7 +58,21 @@ The easiest way to use Flux Monitor on macOS is by downloading the application. 
 - **Install**: Drag **Flux Monitor** to your **Applications** folder.
 - **Launch**: Open the app to start the monitoring dashboard.
 
-### 2. iOS Client (Mobile-side)
+### 2. Homebrew Cask
+You can also install the macOS launcher with Homebrew:
+
+```bash
+brew install --cask chentao1006/tap/flux-monitor
+```
+
+Or tap the repository first:
+
+```bash
+brew tap chentao1006/tap
+brew install --cask flux-monitor
+```
+
+### 3. iOS Client (Mobile-side)
 Monitor and manage your server from anywhere using your iPhone or iPad.
 
 [![Download on the App Store](public/app-store-badge-en.svg)](https://apps.apple.com/app/flux-remote/id6761290185)
@@ -115,6 +130,7 @@ The system uses `config.json` for global settings. You can copy `config.example.
   "features": {
     "monitor": true,
     "processes": true,
+    "ports": true,
     "logs": true,
     "configs": true,
     "launchagent": true,

@@ -19,6 +19,7 @@
 
 - **系统概览**: 显示 CPU、内存、磁盘使用率及网络流量，运行终端命令。
 - **进程管理**: 展示运行进程及其资源消耗。
+- **端口管理**: 查看监听与活跃端口，定位占用进程并释放端口。
 - **日志分析**: 查看系统日志。
 - **配置文件管理**: 编辑并管理系统配置文件。
 - **自启服务管理**: 管理 macOS 的 LaunchAgents 与 LaunchDaemons 服务。
@@ -55,7 +56,21 @@
 - **安装**: 将 **Flux Monitor** 拖入 **Applications** (应用程序) 文件夹。
 - **启动**: 打开应用程序即可开启监控面板。
 
-### 2. iOS 客户端 (移动端)
+### 2. Homebrew Cask
+也可以通过 Homebrew 安装 macOS 启动器：
+
+```bash
+brew install --cask chentao1006/tap/flux-monitor
+```
+
+或先添加 tap：
+
+```bash
+brew tap chentao1006/tap
+brew install --cask flux-monitor
+```
+
+### 3. iOS 客户端 (移动端)
 在 iPhone 或 iPad 上随时随地监控和管理您的服务器。
 
 [![Download on the App Store](public/app-store-badge-zh.svg)](https://apps.apple.com/app/flux-remote/id6761290185)
@@ -113,6 +128,7 @@ chmod +x deploy.sh
   "features": {
     "monitor": true, // 开启/关闭侧边栏可见的功能模块
     "processes": true,
+    "ports": true,
     "logs": true,
     "configs": true,
     "launchagent": true,

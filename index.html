@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>浮光 Flux - macOS Server Monitoring & Management</title>
-    <meta name="description" content="A system monitoring and management dashboard designed for Macs running as servers. Now features a companion iOS app (Flux Remote) for monitoring on the go. Monitor CPU, memory, disk, network, logs, Docker, and Nginx.">
+    <meta name="description" content="A system monitoring and management dashboard designed for Macs running as servers. Now features a companion iOS app (Flux Remote), port management, and Homebrew installation. Monitor CPU, memory, disk, network, logs, Docker, and Nginx.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -173,6 +173,24 @@
             padding: 100px 5%;
             background: var(--bg-secondary);
             text-align: center;
+        }
+
+        .brew-command {
+            margin-top: 24px;
+            color: var(--text-secondary);
+            font-size: 1rem;
+        }
+
+        .brew-command code {
+            display: inline-block;
+            margin-top: 8px;
+            padding: 10px 14px;
+            border-radius: 10px;
+            background: var(--card-bg);
+            color: var(--text-primary);
+            border: 1px solid rgba(128, 128, 128, 0.16);
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+            font-size: 0.92rem;
         }
 
         @media (max-width: 600px) {
@@ -440,8 +458,8 @@
     <section class="hero">
         <h1 lang-en>Flux Monitor<br>macOS Server Management Dashboard</h1>
         <h1 lang-zh>浮光面板<br>macOS 服务器管理系统</h1>
-        <p lang-en>A unified interface for monitoring system status, managing processes, logs, Docker containers, and Nginx configurations on macOS. Now with a native iOS app for remote management.</p>
-        <p lang-zh>“浮光”是一款专为作为服务器运行的 Mac 设计的监控与服务管理面板。现已推出配套 iOS 客户端 (浮光遥控)，支持随时随地远程监控。</p>
+        <p lang-en>A unified interface for monitoring system status, managing processes, ports, logs, Docker containers, and Nginx configurations on macOS. Now with Homebrew installation and a native iOS app for remote management.</p>
+        <p lang-zh>“浮光”是一款专为作为服务器运行的 Mac 设计的监控与服务管理面板，支持端口管理、Homebrew 安装，并提供配套 iOS 客户端 (浮光遥控)。</p>
         
         <div class="download-group">
             <a href="https://github.com/chentao1006/FluxMonitor/releases/latest/download/FluxMonitor.dmg" class="btn-primary">
@@ -459,6 +477,11 @@
                 <span lang-zh>查看 GitHub</span>
             </a>
         </div>
+        <p class="brew-command">
+            <span lang-en>Homebrew:</span>
+            <span lang-zh>Homebrew:</span><br>
+            <code>brew install --cask chentao1006/tap/flux-monitor</code>
+        </p>
         
         <div class="hero-mockup">
             <img src="screenshots/iScreen Shoter - Safari浏览器 - 260311163944.jpg" alt="Flux Dashboard">
@@ -484,6 +507,13 @@
                 <h3 lang-zh>进程管理</h3>
                 <p lang-en>Monitor resource consumption with AI insights into process behavior and life cycles.</p>
                 <p lang-zh>监控进程资源占用，利用 AI 分析进程行为并支持生命周期管理。</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🔌</div>
+                <h3 lang-en>Port Manager</h3>
+                <h3 lang-zh>端口管理</h3>
+                <p lang-en>Inspect listening and active ports, trace owning processes, and release occupied ports.</p>
+                <p lang-zh>查看监听与活跃端口，定位占用进程并释放端口。</p>
             </div>
             <div class="feature-card">
                 <div class="feature-icon">🐳</div>
@@ -643,6 +673,13 @@
                 <span lang-en>Download Launcher</span>
                 <span lang-zh>下载启动器</span>
             </a>
+
+            <!-- Homebrew Cask -->
+            <a href="https://github.com/chentao1006/homebrew-tap" class="btn-secondary">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3h8"></path><path d="M10 3v4.4a4 4 0 0 1-.8 2.4l-3.4 4.6A4 4 0 0 0 9 22h6a4 4 0 0 0 3.2-6.4l-3.4-4.6a4 4 0 0 1-.8-2.4V3"></path><path d="M8 14h8"></path></svg>
+                <span lang-en>Install with Brew</span>
+                <span lang-zh>Brew 安装</span>
+            </a>
             
             <!-- iOS Client -->
             <a href="https://apps.apple.com/app/flux-remote/id6761290185" class="app-store-badge">
@@ -650,6 +687,11 @@
                 <img src="public/app-store-badge-zh.svg" alt="App Store" lang-zh>
             </a>
         </div>
+        <p class="brew-command">
+            <span lang-en>Homebrew:</span>
+            <span lang-zh>Homebrew:</span><br>
+            <code>brew install --cask chentao1006/tap/flux-monitor</code>
+        </p>
     </section>
 
     <footer>
