@@ -472,9 +472,9 @@ export default function LogsPage() {
           {activeFile && currentFile ? (
             <>
               <div className="flex-between" style={{ padding: '1rem', borderBottom: '1px solid var(--color-surface-border)', background: 'var(--color-surface-bg)' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', minWidth: 0, overflow: 'hidden' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', minWidth: 0, overflow: 'hidden', flex: 1 }}>
                   <button className="btn btn-ghost mobile-only" onClick={() => setActiveFile(null)}><ChevronLeft size={20} /></button>
-                  <div style={{ overflow: 'hidden' }}>
+                  <div style={{ overflow: 'hidden', minWidth: 0, flex: 1 }}>
                     <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.6rem', flexWrap: 'wrap' }}>
                       <div style={{ fontWeight: 700, fontSize: '1rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '100%' }}>{currentFile.name}</div>
                       <div style={{ fontSize: '0.65rem', color: 'var(--color-text-muted)', background: 'var(--color-primary-light)', padding: '0.1rem 0.4rem', borderRadius: '4px', fontWeight: 500 }}>
@@ -637,7 +637,7 @@ export default function LogsPage() {
       )}
 
       <style jsx>{`
-        .logs-layout { display: grid; grid-template-columns: minmax(0, 1.4fr) 3fr; gap: 1.5rem; align-items: start; width: 100%; max-width: 100%; box-sizing: border-box; }
+        .logs-layout { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 3fr); gap: 1.5rem; align-items: start; width: 100%; max-width: 100%; box-sizing: border-box; }
         .log-item:hover { background: rgba(59, 130, 246, 0.05) !important; }
         .log-item .log-actions { opacity: 0; transition: opacity 0.15s; }
         .log-item:hover .log-actions { opacity: 1; }

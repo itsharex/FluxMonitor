@@ -278,7 +278,7 @@
 
         .feature-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(min(300px, 100%), 1fr));
             gap: 30px;
             max-width: 1200px;
             margin: 0 auto;
@@ -291,6 +291,8 @@
             border: 1px solid rgba(128, 128, 128, 0.1);
             box-shadow: var(--card-shadow);
             transition: transform 0.3s;
+            min-width: 0;
+            overflow-wrap: anywhere;
         }
 
         .feature-card:hover {
@@ -341,8 +343,15 @@
             }
         }
 
+        .ai-row > .ai-content,
+        .ai-row > .ai-image {
+            min-width: min(300px, 100%) !important;
+        }
+
         .ai-content {
             flex: 1;
+            min-width: 0;
+            overflow-wrap: anywhere;
         }
 
         .ai-image {
@@ -350,10 +359,12 @@
             box-shadow: var(--card-shadow);
             border-radius: 16px;
             overflow: hidden;
+            min-width: 0;
         }
 
         .ai-image img {
             width: 100%;
+            max-width: 100%;
             display: block;
         }
 

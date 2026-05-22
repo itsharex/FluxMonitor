@@ -59,6 +59,14 @@ export default function LaunchAgentDashboard() {
   const [isAddingNew, setIsAddingNew] = useState(false);
   const [newName, setNewName] = useState('');
   const [newContent, setNewContent] = useState('');
+  const [newAiDemand, setNewAiDemand] = useState('');
+  const [isGeneratingNew, setIsGeneratingNew] = useState(false);
+
+  const stripPlistResponse = (text: string) => {
+    const trimmed = text.trim();
+    const fenced = trimmed.match(/^```(?:xml|plist)?\s*([\s\S]*?)\s*```$/i);
+    return (fenced ? fenced[1] : trimmed).trim();
+  };
 
   const openEditor = useCallback(async (item: PlistItem) => {
     setEditingFile(item);
@@ -169,7 +177,43 @@ export default function LaunchAgentDashboard() {
     <true/>
 </dict>
 </plist>`);
+    setNewAiDemand('');
     setIsAddingNew(true);
+  };
+
+  const handleGenerateNewAgent = async () => {
+    if (!newAiDemand.trim() || isGeneratingNew) return;
+
+    setIsGeneratingNew(true);
+    setSaveStatus(t.launchagent.aiGenerating);
+
+    streamAiContent(
+      {
+        prompt: t.launchagent.aiPromptNew.replace('{demand}', newAiDemand.trim()),
+        systemPrompt: 'You are an expert macOS LaunchAgent plist generator. Return only valid plist XML. Do not include Markdown fences, explanations, or extra text.',
+        config: settingsConfig?.ai
+      },
+      (chunk) => {
+        const generated = stripPlistResponse(chunk);
+        setNewContent(generated);
+
+        const label = generated.match(/<key>Label<\/key>\s*<string>(.*?)<\/string>/)?.[1];
+        if (label) setNewName(label.endsWith('.plist') ? label : `${label}.plist`);
+      },
+      () => {
+        setIsGeneratingNew(false);
+        setSaveStatus(t.launchagent.generateSuccess);
+        setTimeout(() => setSaveStatus(''), 2000);
+      },
+      (err) => {
+        setIsGeneratingNew(false);
+        setSaveStatus('');
+        const content = err === 'AI_CONFIG_MISSING'
+          ? `${t.common.errors.aiConfigMissing}: ${t.common.errors.aiConfigMissingDetail}`
+          : `${t.launchagent.generateFailed}: ${err}`;
+        setModalError({ title: t.launchagent.generateFailed, content });
+      }
+    );
   };
 
   const submitNewAgent = async () => {
@@ -575,6 +619,26 @@ export default function LaunchAgentDashboard() {
               />
             </div>
 
+            <div style={{ marginBottom: '1rem', display: 'flex', gap: '0.5rem', alignItems: 'stretch' }}>
+              <textarea
+                className="input"
+                value={newAiDemand}
+                onChange={(e) => setNewAiDemand(e.target.value)}
+                placeholder={t.launchagent.writePrompt}
+                style={{ minHeight: '42px', maxHeight: '84px', resize: 'vertical', fontSize: '0.85rem', flex: 1 }}
+                disabled={isGeneratingNew}
+              />
+              <button
+                className="btn btn-primary"
+                onClick={handleGenerateNewAgent}
+                disabled={!newAiDemand.trim() || isGeneratingNew}
+                style={{ gap: '0.5rem', alignSelf: 'stretch', minWidth: '110px' }}
+              >
+                <Sparkles size={16} className={isGeneratingNew ? 'animate-pulse' : ''} />
+                {isGeneratingNew ? t.launchagent.aiGenerating : t.common.generate}
+              </button>
+            </div>
+
             <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
               <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, marginBottom: '0.4rem', color: 'var(--color-text-muted)' }}>{t.launchagent.configContent}</label>
               <textarea 
@@ -595,7 +659,7 @@ export default function LaunchAgentDashboard() {
       )}
 
       <style jsx>{`
-        .responsive-grid { display: grid; grid-template-columns: minmax(0, 1.4fr) 3fr; gap: 1.5rem; align-items: start; width: 100%; max-width: 100%; box-sizing: border-box; }
+        .responsive-grid { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 3fr); gap: 1.5rem; align-items: start; width: 100%; max-width: 100%; box-sizing: border-box; }
         .plist-tab:hover { background: rgba(59, 130, 246, 0.05) !important; }
         .input-inline:focus { outline: none; border-bottom: 2px solid var(--color-primary); }
         .btn-icon { background: none; border: none; cursor: pointer; padding: 0.2rem; border-radius: 4px; display: flex; align-items: center; transition: background 0.2s; }

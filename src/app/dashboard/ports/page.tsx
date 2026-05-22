@@ -9,6 +9,7 @@ import { useSettings } from '@/lib/SettingsContext';
 import { streamAiContent } from '@/lib/aiStream';
 import {
   Filter,
+  Info,
   Network,
   RefreshCw,
   Search,
@@ -58,6 +59,7 @@ export default function PortsPage() {
   const [autoRefresh, setAutoRefresh] = useState(true);
   const [aiAnalysis, setAiAnalysis] = useState('');
   const [analyzing, setAnalyzing] = useState(false);
+  const [processTooltip, setProcessTooltip] = useState<{ content: string; x: number; y: number } | null>(null);
 
   const fetchPorts = useCallback(async (silent = false) => {
     if (silent) {
@@ -186,6 +188,30 @@ export default function PortsPage() {
 
   const getPortStateLabel = (state: string) => {
     return (t.ports.states as Record<string, string>)[state] || state || t.common.unknown;
+  };
+
+  const getProcessDetails = (group: PortProcessGroup) => [
+    `${t.processes.user}: ${group.user || t.common.unknown}`,
+    `CPU ${group.cpu}%`,
+    `MEM ${group.mem}%`,
+    group.ppid ? `PPID ${group.ppid}` : '',
+    group.start ? `${t.processes.startTime}: ${group.start}` : '',
+    group.fullCommand || group.command,
+  ].filter(Boolean).join('\n');
+
+  const showProcessTooltip = (event: React.MouseEvent<HTMLElement> | React.FocusEvent<HTMLElement>, group: PortProcessGroup) => {
+    const rect = event.currentTarget.getBoundingClientRect();
+    const tooltipWidth = Math.min(520, window.innerWidth - 32);
+    const x = Math.min(
+      Math.max(rect.left + rect.width / 2, tooltipWidth / 2 + 16),
+      window.innerWidth - tooltipWidth / 2 - 16
+    );
+
+    setProcessTooltip({
+      content: getProcessDetails(group),
+      x,
+      y: rect.bottom + 10,
+    });
   };
 
   return (
@@ -318,18 +344,19 @@ export default function PortsPage() {
                 <div style={{ minWidth: 0 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
                     <h2 style={{ margin: 0, fontSize: '1.05rem', wordBreak: 'break-word' }}>{group.command}</h2>
+                    <span
+                      className="process-info-trigger"
+                      aria-label={getProcessDetails(group)}
+                      tabIndex={0}
+                      onMouseEnter={(event) => showProcessTooltip(event, group)}
+                      onMouseLeave={() => setProcessTooltip(null)}
+                      onFocus={(event) => showProcessTooltip(event, group)}
+                      onBlur={() => setProcessTooltip(null)}
+                    >
+                      <Info size={16} />
+                    </span>
                     <span className="badge badge-warning">PID {group.pid}</span>
                     <span className="badge badge-success">{t.ports.portsInGroup.replace('{count}', group.ports.length.toString())}</span>
-                  </div>
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', marginTop: '0.6rem', color: 'var(--color-text-muted)', fontSize: '0.82rem' }}>
-                    <span>{t.processes.user}: {group.user || t.common.unknown}</span>
-                    <span>CPU {group.cpu}%</span>
-                    <span>MEM {group.mem}%</span>
-                    {group.ppid && <span>PPID {group.ppid}</span>}
-                    {group.start && <span>{t.processes.startTime}: {group.start}</span>}
-                  </div>
-                  <div className="code-block" style={{ marginTop: '0.75rem', fontSize: '0.78rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                    {group.fullCommand || group.command}
                   </div>
                 </div>
                 <div style={{ display: 'flex', gap: '0.5rem', flexShrink: 0 }}>
@@ -372,6 +399,18 @@ export default function PortsPage() {
           </div>
         )}
       </div>
+
+      {processTooltip && (
+        <div
+          className="process-info-tooltip"
+          style={{
+            left: processTooltip.x,
+            top: processTooltip.y,
+          }}
+        >
+          {processTooltip.content}
+        </div>
+      )}
 
       <style jsx>{`
         .port-toolbar {
@@ -454,6 +493,51 @@ export default function PortsPage() {
           width: 15px;
           height: 15px;
           cursor: pointer;
+        }
+
+        .process-info-trigger {
+          position: relative;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          width: 22px;
+          height: 22px;
+          border-radius: 999px;
+          color: var(--color-text-muted);
+          background: var(--color-bg);
+          border: 1px solid var(--color-surface-border);
+          cursor: help;
+          flex-shrink: 0;
+        }
+
+        .process-info-trigger:hover,
+        .process-info-trigger:focus-visible {
+          color: var(--color-primary);
+          border-color: var(--color-primary);
+          outline: none;
+        }
+
+        .process-info-tooltip {
+          position: fixed;
+          transform: translateX(-50%);
+          z-index: 2000;
+          width: max-content;
+          max-width: min(520px, calc(100vw - 32px));
+          padding: 0.7rem 0.8rem;
+          border-radius: var(--radius-md);
+          background: var(--color-surface-bg);
+          color: var(--color-text);
+          border: 1px solid var(--color-surface-border);
+          box-shadow: 0 18px 45px rgba(0, 0, 0, 0.18);
+          backdrop-filter: blur(18px);
+          -webkit-backdrop-filter: blur(18px);
+          font-size: 0.75rem;
+          font-family: monospace;
+          font-weight: 500;
+          line-height: 1.45;
+          white-space: pre-wrap;
+          overflow-wrap: anywhere;
+          pointer-events: none;
         }
 
         .port-chip-grid {
