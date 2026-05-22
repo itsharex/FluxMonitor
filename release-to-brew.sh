@@ -153,7 +153,7 @@ ensure_local_brew_tap() {
 }
 
 write_tap_files() {
-    mkdir -p "$TAP_DIR/Casks" "$TAP_DIR/.github/workflows"
+    mkdir -p "$TAP_DIR/Casks"
 
     cat >"$TAP_DIR/Casks/${CASK_TOKEN}.rb" <<EOF
 cask "$CASK_TOKEN" do
@@ -196,24 +196,10 @@ brew install --cask ${CASK_TOKEN}
 \`\`\`
 EOF
 
-    cat >"$TAP_DIR/.github/workflows/tests.yml" <<'EOF'
-name: Tests
-
-on:
-  pull_request:
-  push:
-    branches:
-      - main
-
-jobs:
-  test-bot:
-    runs-on: macos-latest
-    steps:
-      - name: Set up Homebrew
-        uses: Homebrew/actions/setup-homebrew@master
-      - name: Test tap
-        run: brew test-bot --only-cleanup-before --only-setup --only-tap-syntax
-EOF
+    if [ -f "$TAP_DIR/.github/workflows/tests.yml" ]; then
+        echo "Removing obsolete tap Tests workflow..."
+        rm -f "$TAP_DIR/.github/workflows/tests.yml"
+    fi
 }
 
 run_brew_checks() {
@@ -240,7 +226,10 @@ run_brew_checks() {
 }
 
 commit_and_push() {
-    git -C "$TAP_DIR" add "Casks/${CASK_TOKEN}.rb" README.md .github/workflows/tests.yml
+    git -C "$TAP_DIR" add "Casks/${CASK_TOKEN}.rb" README.md
+    if git -C "$TAP_DIR" ls-files --error-unmatch .github/workflows/tests.yml >/dev/null 2>&1; then
+        git -C "$TAP_DIR" add -A .github/workflows/tests.yml
+    fi
 
     if git -C "$TAP_DIR" diff --cached --quiet; then
         echo "No Homebrew tap changes to commit."
