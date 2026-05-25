@@ -127,7 +127,7 @@ fi
 # Ensure Next.js standalone is ready
 if [ ! -d ".next/standalone" ]; then
     echo "Preparing Next.js standalone build..."
-    npm install && npm run build
+    NEXT_TELEMETRY_DISABLED=1 npm install && NEXT_TELEMETRY_DISABLED=1 npm run build
 fi
 
 # Always sync static and public files to standalone to ensure they are up to date

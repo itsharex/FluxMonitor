@@ -505,12 +505,14 @@ export const translations = {
       apiKey: 'API Key',
       model: '模型名称 (Model)',
     },
-    ios: {
-      title: '浮光远控 (iOS) 已推出',
-      desc: '在 iPhone 或 iPad 上远程查看和管理您的服务器。',
-      viewOnAppStore: 'App Store',
+    client: {
+      title: '浮光远控 移动端',
+      desc: '诚挚邀请您参与测试，在手机上随时随地管理您的服务器！目前提供 iOS 正式版及 Android (Alpha 测试版)。',
+      androidAlphaNotice: '注：Android 版目前处于 Alpha 测试阶段，请按以下步骤参与：',
+      joinGroup: '1. 加入 Google Group 测试组',
+      downloadAndroid: '2. 前往 Play 商店下载',
       dismiss: '稍后再说',
-      scanToRemote: '扫码体验 浮光远控',
+      scanToRemote: '扫码体验',
       appStoreBadge: '/app-store-badge-zh.svg'
     }
   },
@@ -1019,12 +1021,14 @@ export const translations = {
       apiKey: 'API Key',
       model: 'Model Name',
     },
-    ios: {
-      title: 'Flux Remote (iOS) Available',
-      desc: 'Monitor and manage your server remotely from your iPhone or iPad.',
-      viewOnAppStore: 'View on App Store',
+    client: {
+      title: 'Flux Remote Mobile',
+      desc: 'We sincerely invite you to test our mobile app and manage your server anywhere! Available for iOS and Android (Alpha).',
+      androidAlphaNotice: 'Note: Android is currently in Alpha. Please follow the steps below:',
+      joinGroup: '1. Join Google Group',
+      downloadAndroid: '2. Download on Play Store',
       dismiss: 'Maybe Later',
-      scanToDownload: 'Scan to Download Flux Remote',
+      scanToRemote: 'Scan to experience',
       appStoreBadge: '/app-store-badge-en.svg'
     }
   }

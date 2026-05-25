@@ -1,15 +1,42 @@
 #!/bin/bash
 set -e
 
-# This script builds the Flux Monitor app, installs it to /Applications, 
+# This script builds the Flux Monitor app, installs it to /Applications,
 # and launches it for testing.
 
 APP_NAME="Flux Monitor"
 PROJECT_DIR="$(pwd)"
 BUILD_DIR="${PROJECT_DIR}/launcher/build"
 APP_DIR="${BUILD_DIR}/Release/${APP_NAME}.app"
-DEST_DIR="${HOME}/Applications/${APP_NAME}.app"
+DEST_DIR="/Applications/${APP_NAME}.app"
 CONFIG_FILE="${HOME}/Library/Application Support/com.ct106.flux-monitor/config.json"
+
+is_flux_backend_pid() {
+    local pid="$1"
+    local command
+    local cwd
+
+    command=$(ps -p "$pid" -o command= 2>/dev/null || true)
+    cwd=$(lsof -nP -a -p "$pid" -d cwd -F n 2>/dev/null | sed -n 's/^n//p' | head -n 1)
+    [[ "$command" == *"/${APP_NAME}.app/Contents/Resources/server.js"* ]] ||
+        [[ "$cwd" == *"/${APP_NAME}.app/Contents/Resources" ]]
+}
+
+terminate_pid() {
+    local pid="$1"
+    local label="$2"
+
+    if [ -z "$pid" ] || [ "$pid" -le 100 ] 2>/dev/null; then
+        return
+    fi
+
+    kill "$pid" 2>/dev/null || true
+    sleep 0.5
+    if kill -0 "$pid" 2>/dev/null; then
+        echo "⚠️ ${label} PID ${pid} is still alive, force killing..."
+        kill -9 "$pid" 2>/dev/null || true
+    fi
+}
 
 wait_for_exit() {
     local pattern="$1"
@@ -24,7 +51,10 @@ wait_for_exit() {
     done
 
     echo "⚠️ ${label} did not exit after ${timeout}s, force killing..."
-    pkill -9 -f "$pattern" || true
+    while IFS= read -r pid; do
+        [ -n "$pid" ] || continue
+        terminate_pid "$pid" "$label"
+    done < <(pgrep -f "$pattern" || true)
 }
 
 stop_existing_app() {
@@ -51,20 +81,26 @@ stop_existing_app() {
     # Also explicitly kill any orphan backend processes that might still be running.
     # We search for any 'node' process that is running our specific 'server.js' from the app bundle.
     echo "🧹 Cleaning up orphan backend processes..."
-    pkill -f "node.*/Contents/Resources/server.js" || true
-    wait_for_exit "node.*/Contents/Resources/server.js" "Bundled backend"
+    while IFS= read -r PID; do
+        [ -n "$PID" ] || continue
+        terminate_pid "$PID" "Bundled backend"
+    done < <(pgrep -f "node.*/${APP_NAME}\\.app/Contents/Resources/server.js" || true)
+    wait_for_exit "node.*/${APP_NAME}\\.app/Contents/Resources/server.js" "Bundled backend"
 
     # Also try to kill the process by reading the actual configured port from the config.json
     if [ -f "$CONFIG_FILE" ]; then
-        PORT=$(grep -o '"port": *[0-9]*' "$CONFIG_FILE" | awk -F': ' '{print $2}' | tr -d ' ,')
-        if [ -n "$PORT" ]; then
+        PORT=$(grep -Eo '"port"\s*:\s*[0-9]+' "$CONFIG_FILE" | awk -F':' '{print $2}' | tr -d ' ,')
+        if [ -n "$PORT" ] && [ "$PORT" -gt 0 ] 2>/dev/null; then
             echo "🚿 Clearing connections on port ${PORT} as specified in config..."
-            PIDS=$(lsof -ti :"$PORT" 2>/dev/null || true)
-            if [ -n "$PIDS" ]; then
-                kill $PIDS 2>/dev/null || true
-                sleep 1
-                kill -9 $PIDS 2>/dev/null || true
-            fi
+            PIDS=$(lsof -nP -tiTCP:"$PORT" -sTCP:LISTEN 2>/dev/null || true)
+            for PID in $PIDS; do
+                if is_flux_backend_pid "$PID"; then
+                    terminate_pid "$PID" "Port ${PORT} backend"
+                else
+                    COMMAND=$(ps -p "$PID" -o command= 2>/dev/null || true)
+                    echo "⚠️ Skipping PID ${PID} on port ${PORT}; it is not the Flux Monitor backend: ${COMMAND}"
+                fi
+            done
         fi
     fi
 }
@@ -85,8 +121,7 @@ fi
 
 stop_existing_app
 
-echo "🚚 3. Copying ${APP_NAME}.app to ${HOME}/Applications..."
-mkdir -p "${HOME}/Applications"
+echo "🚚 3. Copying ${APP_NAME}.app to /Applications..."
 if [ -d "${APP_DIR}" ]; then
     rm -rf "${DEST_DIR}"
     cp -R "${APP_DIR}" "${DEST_DIR}"
@@ -103,7 +138,7 @@ xattr -rc "${DEST_DIR}"
 chmod -R 755 "${DEST_DIR}"
 
 echo "🚀 5. Launching the app..."
-# Launch the app from the terminal
-open "${DEST_DIR}"
+# Launch the exact app bundle we just copied, even if another copy exists in /Applications.
+open -n "${DEST_DIR}"
 
 echo "✨ Test cycle complete!"

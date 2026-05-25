@@ -130,13 +130,13 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
             .filter { $0 == true }
             .first() // Only trigger once per session
             .sink { [weak self] _ in
-                let iosGuideShown = UserDefaults.standard.bool(forKey: "iosAppGuideShown")
-                if !iosGuideShown {
+                let appGuideShown = UserDefaults.standard.bool(forKey: "appGuideShown")
+                if !appGuideShown {
                     self?.showSettings()
                     // Delay slightly to ensure MainView is ready
                     DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
-                        NotificationCenter.default.post(name: NSNotification.Name("ShowIOSAppGuide"), object: nil)
-                        UserDefaults.standard.set(true, forKey: "iosAppGuideShown")
+                        NotificationCenter.default.post(name: NSNotification.Name("ShowAppGuide"), object: nil)
+                        UserDefaults.standard.set(true, forKey: "appGuideShown")
                     }
                 }
             }
@@ -292,7 +292,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
     @objc func openAppStore() {
         showSettings()
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-            NotificationCenter.default.post(name: NSNotification.Name("ShowIOSAppGuide"), object: nil)
+            NotificationCenter.default.post(name: NSNotification.Name("ShowAppGuide"), object: nil)
         }
     }
 

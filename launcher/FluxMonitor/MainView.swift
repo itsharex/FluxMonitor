@@ -7,7 +7,7 @@ struct MainView: View {
     @StateObject var tunnelManager = TunnelManager.shared
     @State private var selectedTab = 0
     @State private var showingFirstRunAlert = false
-    @State private var showingIOSAppGuide = false
+    @State private var showingAppGuide = false
     
     init() {
         let username = UserDefaults.standard.string(forKey: "username") ?? ""
@@ -54,7 +54,7 @@ struct MainView: View {
                 }
                 .tag(2)
             
-            AboutView(showingIOSAppGuide: $showingIOSAppGuide)
+            AboutView(showingAppGuide: $showingAppGuide)
                 .tabItem {
                     Text(i18n.t("about"))
                 }
@@ -103,11 +103,11 @@ struct MainView: View {
         } message: {
             Text(i18n.t("download_node_message"))
         }
-        .sheet(isPresented: $showingIOSAppGuide) {
-            IOSAppGuideView()
+        .sheet(isPresented: $showingAppGuide) {
+            AppGuideView()
         }
-        .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("ShowIOSAppGuide"))) { _ in
-            showingIOSAppGuide = true
+        .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("ShowAppGuide"))) { _ in
+            showingAppGuide = true
         }
     }
 }

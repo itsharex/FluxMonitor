@@ -9,7 +9,7 @@ import { useSettings } from '@/lib/SettingsContext';
 import { Languages, Sun, Moon, SunMoon, Smartphone } from 'lucide-react';
 import GlobalTerminal from '@/components/GlobalTerminal';
 import { useTheme } from '@/lib/ThemeContext';
-import IOSAppGuide from '@/components/IOSAppGuide';
+import AppGuide from '@/components/AppGuide';
 
 export default function DashboardLayout({
   children,
@@ -22,7 +22,7 @@ export default function DashboardLayout({
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isLangMenuOpen, setIsLangMenuOpen] = useState(false);
   const [isThemeMenuOpen, setIsThemeMenuOpen] = useState(false);
-  const [isIOSGuideOpen, setIsIOSGuideOpen] = useState(false);
+  const [isAppGuideOpen, setIsAppGuideOpen] = useState(false);
   const mounted = !settingsLoading;
 
   useEffect(() => {
@@ -30,15 +30,15 @@ export default function DashboardLayout({
       const isDismissed = localStorage.getItem('ios_guide_dismissed');
       if (!isDismissed) {
         const timer = setTimeout(() => {
-          setIsIOSGuideOpen(true);
+          setIsAppGuideOpen(true);
         }, 1500);
         return () => clearTimeout(timer);
       }
     }
   }, [mounted]);
 
-  const closeIOSGuide = () => {
-    setIsIOSGuideOpen(false);
+  const closeAppGuide = () => {
+    setIsAppGuideOpen(false);
     localStorage.setItem('ios_guide_dismissed', 'true');
   };
 
@@ -131,7 +131,7 @@ export default function DashboardLayout({
           
           <div style={{ padding: '0 0.75rem', marginBottom: '0.5rem' }}>
             <button 
-              onClick={() => setIsIOSGuideOpen(true)}
+              onClick={() => setIsAppGuideOpen(true)}
               className="btn btn-primary"
               style={{ 
                 width: '100%', 
@@ -274,7 +274,7 @@ export default function DashboardLayout({
         {children}
       </main>
       <GlobalTerminal />
-      <IOSAppGuide isOpen={isIOSGuideOpen} onClose={closeIOSGuide} />
+      <AppGuide isOpen={isAppGuideOpen} onClose={closeAppGuide} />
     </div>
   );
 }

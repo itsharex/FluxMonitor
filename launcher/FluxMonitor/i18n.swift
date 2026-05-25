@@ -119,11 +119,15 @@ class I18N: ObservableObject {
         "icloud_sync_removed": "已从 iCloud 移除同步",
         "icloud_unavailable": "iCloud 服务不可用，请检查登录状态",
         "open_icloud_folder": "打开 iCloud 文件夹",
-        "ios_app_title": "浮光远控 (iOS) 已推出",
-        "ios_app_desc": "在 iPhone 或 iPad 上远程查看和管理您的服务器。",
+        "client_app_title": "浮光远控 移动端",
+        "client_app_desc": "诚挚邀请您参与测试，在手机上随时随地管理您的服务器！目前提供 iOS 正式版及 Android (Alpha 测试版)。",
         "view_on_app_store": "下载移动客户端",
         "dismiss": "稍后再说",
-        "app_store_badge": "AppStoreBadgeZH"
+        "app_store_badge": "AppStoreBadgeZH",
+        "scan_to_remote": "扫码体验",
+        "android_alpha_notice": "注：Android 版目前处于 Alpha 测试阶段，请按以下步骤参与：",
+        "join_group": "1. 加入 Google Group 测试组",
+        "download_android": "2. 前往 Play 商店下载"
     ]
     
     private let enDict = [
@@ -206,11 +210,15 @@ class I18N: ObservableObject {
         "icloud_sync_removed": "Sync removed from iCloud",
         "icloud_unavailable": "iCloud service unavailable, please check login status",
         "open_icloud_folder": "Open iCloud Folder",
-        "ios_app_title": "Flux Remote (iOS) Available",
-        "ios_app_desc": "Monitor and manage your server remotely from your iPhone or iPad.",
+        "client_app_title": "Flux Remote Mobile",
+        "client_app_desc": "We sincerely invite you to test our mobile app and manage your server anywhere! Available for iOS and Android (Alpha).",
         "view_on_app_store": "Download Mobile Client",
         "dismiss": "Maybe Later",
-        "app_store_badge": "AppStoreBadgeEN"
+        "app_store_badge": "AppStoreBadgeEN",
+        "scan_to_remote": "Scan to experience",
+        "android_alpha_notice": "Note: Android is currently in Alpha. Please follow the steps below:",
+        "join_group": "1. Join Google Group",
+        "download_android": "2. Download on Play Store"
     ]
 }
 

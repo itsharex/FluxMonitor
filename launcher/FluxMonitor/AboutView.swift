@@ -4,7 +4,7 @@ struct AboutView: View {
     @StateObject var i18n = I18N.shared
     let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.1.4"
     let build = Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "1"
-    @Binding var showingIOSAppGuide: Bool
+    @Binding var showingAppGuide: Bool
     
     var body: some View {
         VStack(spacing: 20) {
@@ -29,7 +29,7 @@ struct AboutView: View {
             
             VStack(spacing: 12) {
                 Button(action: {
-                    showingIOSAppGuide = true
+                    showingAppGuide = true
                 }) {
                     HStack {
                         Image(systemName: "smartphone")
