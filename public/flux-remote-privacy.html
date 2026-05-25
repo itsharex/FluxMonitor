@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flux Remote Privacy Policy</title>
+    <meta name="description" content="Privacy Policy for Flux Remote on Android.">
+    <style>
+        :root {
+            color-scheme: light;
+            --bg: #ffffff;
+            --bg-soft: #f8fafc;
+            --panel: rgba(255, 255, 255, 0.92);
+            --line: rgba(59, 107, 184, 0.16);
+            --text: #0f172a;
+            --muted: #64748b;
+            --accent: #3b6bb8;
+            --accent-deep: #2b4e8e;
+            --shadow: 0 24px 70px rgba(15, 23, 42, 0.12);
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                color-scheme: dark;
+                --bg: #0f172a;
+                --bg-soft: #1e293b;
+                --panel: rgba(30, 41, 59, 0.92);
+                --line: rgba(120, 159, 214, 0.2);
+                --text: #f8fafc;
+                --muted: #94a3b8;
+                --accent: #8cb2e6;
+                --accent-deep: #b7cef0;
+                --shadow: 0 24px 70px rgba(0, 0, 0, 0.28);
+            }
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            min-width: 320px;
+            margin: 0;
+            background:
+                radial-gradient(circle at 14% 2%, rgba(59, 107, 184, 0.16), transparent 30rem),
+                linear-gradient(180deg, var(--bg) 0%, var(--bg-soft) 48%, var(--bg) 100%);
+            color: var(--text);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            line-height: 1.65;
+        }
+
+        a {
+            color: var(--accent-deep);
+            font-weight: 700;
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        .page {
+            width: min(920px, calc(100% - 40px));
+            margin: 0 auto;
+            padding: 56px 0;
+        }
+
+        header {
+            margin-bottom: 28px;
+        }
+
+        .back-link {
+            display: inline-flex;
+            margin-bottom: 24px;
+            color: var(--muted);
+            font-size: 0.95rem;
+            font-weight: 700;
+        }
+
+        h1 {
+            margin: 0 0 10px;
+            font-size: clamp(2.2rem, 6vw, 4rem);
+            line-height: 1.06;
+            letter-spacing: 0;
+        }
+
+        .subtitle {
+            max-width: 720px;
+            margin: 0;
+            color: var(--muted);
+            font-size: 1.05rem;
+        }
+
+        .policy {
+            padding: clamp(24px, 5vw, 44px);
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: var(--panel);
+            box-shadow: var(--shadow);
+        }
+
+        .updated {
+            display: block;
+            margin-bottom: 28px;
+            color: var(--muted);
+            font-weight: 700;
+        }
+
+        section + section {
+            margin-top: 32px;
+        }
+
+        h2 {
+            margin: 0 0 10px;
+            color: var(--accent-deep);
+            font-size: 1.25rem;
+            letter-spacing: 0;
+        }
+
+        p {
+            margin: 0 0 12px;
+        }
+
+        ul {
+            margin: 0;
+            padding-left: 22px;
+        }
+
+        li {
+            margin-bottom: 8px;
+        }
+
+        .divider {
+            height: 1px;
+            margin: 40px 0;
+            background: var(--line);
+        }
+
+        footer {
+            margin-top: 26px;
+            color: var(--muted);
+            font-size: 0.9rem;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="page">
+        <header>
+            <a class="back-link" href="index.html">Back to Flux</a>
+            <h1>Flux Remote Privacy Policy</h1>
+            <p class="subtitle">This policy applies to Flux Remote for Android, the mobile client used to connect to a Flux Monitor server configured by the user.</p>
+        </header>
+
+        <main class="policy">
+            <span class="updated">Last updated: May 25, 2026</span>
+
+            <section>
+                <h2>1. Overview</h2>
+                <p>Flux Remote is a remote monitoring and management client. It connects to Flux Monitor servers that you add in the app. The developer does not operate a central account service for Flux Remote and does not collect personal data from the Android app for advertising, tracking, or analytics.</p>
+            </section>
+
+            <section>
+                <h2>2. Data Stored on Your Device</h2>
+                <p>Flux Remote may store the following information locally on your Android device so the app can connect to your server:</p>
+                <ul>
+                    <li>Server name, address, port, and connection settings.</li>
+                    <li>Login credentials or tokens that you enter for your own Flux Monitor server.</li>
+                    <li>App preferences such as language, theme, and display settings.</li>
+                </ul>
+                <p>This data is used only to provide the app's remote connection features. It is not sold or shared by the developer.</p>
+            </section>
+
+            <section>
+                <h2>3. Data Sent to Your Server</h2>
+                <p>When you use Flux Remote, the app sends requests directly to the Flux Monitor server address you configure. These requests may include login credentials, commands, configuration changes, or other management actions that you initiate. The data is handled by your own Flux Monitor server and by the network path between your Android device and that server.</p>
+            </section>
+
+            <section>
+                <h2>4. Third-party Services</h2>
+                <p>Flux Remote for Android does not include third-party advertising or tracking SDKs. If you connect to a server through a public tunnel, reverse proxy, VPN, DNS provider, or other network service, that service may process network traffic according to its own policy. If your Flux Monitor server uses optional AI features, those requests are processed by the AI provider configured on the server side, not by Flux Remote itself.</p>
+            </section>
+
+            <section>
+                <h2>5. Permissions</h2>
+                <p>Flux Remote needs network access to connect to your configured server. The app does not request access to contacts, precise location, microphone, camera, or photos for its core monitoring features.</p>
+            </section>
+
+            <section>
+                <h2>6. Security</h2>
+                <p>You are responsible for the security of the Flux Monitor server you connect to. We recommend using HTTPS or a trusted private network, setting a strong password, keeping the server app up to date, and removing servers you no longer use from the app.</p>
+            </section>
+
+            <section>
+                <h2>7. Data Deletion</h2>
+                <p>You can delete saved server profiles and app data from within Flux Remote if the app provides those controls, or by using Android system settings to clear the app's storage or uninstall the app. Data stored on your Flux Monitor server must be deleted on that server.</p>
+            </section>
+
+            <section>
+                <h2>8. Children's Privacy</h2>
+                <p>Flux Remote is not directed to children. The app is intended for users who manage their own computer or server environment.</p>
+            </section>
+
+            <section>
+                <h2>9. Changes to This Policy</h2>
+                <p>We may update this policy when app behavior changes or when legal requirements change. The updated version will be posted on this page with a new last updated date.</p>
+            </section>
+
+            <section>
+                <h2>10. Contact</h2>
+                <p>If you have questions about this policy, contact the developer through GitHub:</p>
+                <p><a href="https://github.com/chentao1006/FluxMonitor/issues">https://github.com/chentao1006/FluxMonitor/issues</a></p>
+            </section>
+
+            <div class="divider"></div>
+
+            <section lang="zh-CN">
+                <h2>中文说明</h2>
+                <p>Flux Remote 安卓版用于连接用户自行配置的 Flux Monitor 服务器。开发者不通过安卓版应用收集用于广告、追踪或统计分析的个人数据。应用可能在本机保存服务器地址、端口、登录凭据或令牌以及应用偏好，用于完成远程连接。</p>
+                <p>当你使用应用时，请求会直接发送到你配置的 Flux Monitor 服务器。请求可能包含登录凭据、命令、配置修改或你主动触发的管理操作。请使用 HTTPS 或可信网络连接服务器，并在不再使用时删除本机保存的服务器配置。</p>
+                <p>如需删除本机数据，可在应用内删除服务器配置，或通过 Android 系统设置清除应用存储、卸载应用。服务器端保存的数据需要在你的 Flux Monitor 服务器上删除。</p>
+            </section>
+        </main>
+
+        <footer>
+            &copy; 2026 Tao Chen. All rights reserved.
+        </footer>
+    </div>
+</body>
+</html>

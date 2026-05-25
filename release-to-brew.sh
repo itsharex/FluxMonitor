@@ -123,7 +123,7 @@ ensure_remote_repo() {
     echo "Creating GitHub tap repository ${TAP_OWNER}/${TAP_REPO}..."
     "$GH_BIN" repo create "${TAP_OWNER}/${TAP_REPO}" \
         --public \
-        --description "Homebrew tap for Flux Monitor" \
+        --description "Homebrew tap" \
         --clone=false
 }
 
@@ -179,27 +179,6 @@ cask "$CASK_TOKEN" do
 end
 EOF
 
-    cat >"$TAP_DIR/README.md" <<EOF
-# Homebrew Tap for Flux Monitor
-
-Install Flux Monitor:
-
-\`\`\`sh
-brew install --cask ${TAP_OWNER}/${TAP_NAME}/${CASK_TOKEN}
-\`\`\`
-
-Or tap the repository first:
-
-\`\`\`sh
-brew tap ${TAP_OWNER}/${TAP_NAME}
-brew install --cask ${CASK_TOKEN}
-\`\`\`
-EOF
-
-    if [ -f "$TAP_DIR/.github/workflows/tests.yml" ]; then
-        echo "Removing obsolete tap Tests workflow..."
-        rm -f "$TAP_DIR/.github/workflows/tests.yml"
-    fi
 }
 
 run_brew_checks() {
@@ -226,10 +205,7 @@ run_brew_checks() {
 }
 
 commit_and_push() {
-    git -C "$TAP_DIR" add "Casks/${CASK_TOKEN}.rb" README.md
-    if git -C "$TAP_DIR" ls-files --error-unmatch .github/workflows/tests.yml >/dev/null 2>&1; then
-        git -C "$TAP_DIR" add -A .github/workflows/tests.yml
-    fi
+    git -C "$TAP_DIR" add "Casks/${CASK_TOKEN}.rb"
 
     if git -C "$TAP_DIR" diff --cached --quiet; then
         echo "No Homebrew tap changes to commit."
