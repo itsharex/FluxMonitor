@@ -93,7 +93,7 @@ class NodeInstaller: ObservableObject {
     func isNodeVersionCompatible(at path: String) -> Bool {
         let p = Process()
         p.executableURL = URL(fileURLWithPath: path)
-        p.arguments = ["-v"]
+        p.arguments = ["-p", "process.version + ' ' + process.arch"]
         let pipe = Pipe()
         p.standardOutput = pipe
         p.standardError = pipe
@@ -103,11 +103,24 @@ class NodeInstaller: ObservableObject {
             if p.terminationStatus != 0 { return false }
             
             if let data = try? pipe.fileHandleForReading.readToEnd(),
-               let versionStr = String(data: data, encoding: .utf8)?.trimmingCharacters(in: .whitespacesAndNewlines) {
-                // versionStr is like "v20.19.5" or "v14.17.0"
+               let outputStr = String(data: data, encoding: .utf8)?.trimmingCharacters(in: .whitespacesAndNewlines) {
+                
+                let components = outputStr.split(separator: " ")
+                guard components.count >= 2 else { return false }
+                
+                let versionStr = String(components[0])
+                let archStr = String(components[1])
+                
+                // Ensure architecture matches native system to prevent Rosetta warnings
+                let expectedArch = getArchitecture()
+                if archStr != expectedArch {
+                    ProcessManager.shared.appendLog("Found Node.js \(versionStr) but architecture \(archStr) does not match expected \(expectedArch).\n")
+                    return false
+                }
+                
                 let cleanVersion = versionStr.trimmingCharacters(in: CharacterSet.decimalDigits.inverted)
-                let components = cleanVersion.split(separator: ".")
-                if let majorStr = components.first, let major = Int(majorStr) {
+                let versionComponents = cleanVersion.split(separator: ".")
+                if let majorStr = versionComponents.first, let major = Int(majorStr) {
                     if major >= 18 {
                         return true
                     } else {

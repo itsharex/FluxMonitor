@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useLanguage } from '@/lib/LanguageContext';
 import { useSettings } from '@/lib/SettingsContext';
+import { useAnalytics } from '@/components/AnalyticsProvider';
 import { Sliders, Save, User, Cpu, Power, Info, AlertTriangle } from 'lucide-react';
 import { AppConfig, UserConfig } from '@/lib/types';
 
@@ -11,6 +12,7 @@ export default function SettingsPage() {
   const { config: globalConfig, loading: settingsLoading, updateConfig } = useSettings();
   const [config, setConfig] = useState<AppConfig | null>(null);
   const [saveStatus, setSaveStatus] = useState('');
+  const { enabled: analyticsEnabled, setEnabled: setAnalyticsEnabled } = useAnalytics();
 
   // Initialize local config once external settings are loaded
   if (!config && !settingsLoading && globalConfig) {
@@ -215,6 +217,48 @@ export default function SettingsPage() {
             </div>
           </div>
         </section>
+
+        {/* About / Analytics */}
+        <section className="card glass-panel span-2" style={{ padding: '1.25rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.25rem' }}>
+            <Info size={20} color="var(--color-primary)" />
+            <h2 style={{ fontSize: '1.1rem', margin: 0 }}>{t.settings.about || '关于'}</h2>
+          </div>
+          <div className="responsive-grid responsive-grid-auto" style={{ gap: '1rem' }}>
+            <label
+              className="flex-between glass-panel"
+              style={{
+                padding: '0.75rem 1rem',
+                borderRadius: 'var(--radius-sm)',
+                cursor: 'pointer',
+                userSelect: 'none',
+                transition: 'all 0.2s',
+                border: analyticsEnabled ? '1px solid var(--color-primary-light)' : '1px solid transparent'
+              }}
+            >
+              <span style={{
+                fontWeight: 500,
+                color: analyticsEnabled ? 'var(--color-primary)' : 'var(--color-text-muted)',
+                opacity: analyticsEnabled ? 1 : 0.7
+              }}>
+                {t.settings.analyticsEnable || '开启匿名数据统计'}
+              </span>
+              <label className="switch" onClick={e => e.stopPropagation()}>
+                <input
+                  type="checkbox"
+                  checked={!!analyticsEnabled}
+                  onChange={e => setAnalyticsEnabled(e.target.checked)}
+                />
+                <span className="slider"></span>
+              </label>
+            </label>
+          </div>
+          <div style={{ marginTop: '1.5rem', display: 'flex', gap: '0.5rem', alignItems: 'center', color: 'var(--color-text-muted)', fontSize: '0.85rem' }}>
+            <Info size={14} />
+            <span>{t.settings.analyticsDesc || '开启匿名使用数据统计，帮助我们改进产品功能与体验。'}</span>
+          </div>
+        </section>
+
       </div>
     </div>
   );

@@ -32,6 +32,7 @@ export async function generateMetadata(): Promise<Metadata> {
 import { LanguageProvider } from "@/lib/LanguageContext";
 import { ThemeProvider } from "@/lib/ThemeContext";
 import { SettingsProvider } from "@/lib/SettingsContext";
+import { AnalyticsProvider } from "@/components/AnalyticsProvider";
 
 export default async function RootLayout({
   children,
@@ -59,7 +60,9 @@ export default async function RootLayout({
         <ThemeProvider>
           <SettingsProvider>
             <LanguageProvider initialLanguage={initialLang} initialSystemLang={effectiveLang}>
-              {children}
+              <AnalyticsProvider>
+                {children}
+              </AnalyticsProvider>
             </LanguageProvider>
           </SettingsProvider>
         </ThemeProvider>
