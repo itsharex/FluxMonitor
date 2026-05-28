@@ -50,7 +50,8 @@ export function AnalyticsProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (enabled && aptabaseKey) {
-      init(aptabaseKey, { appVersion });
+      // Force isDebug to false so events from localhost or dev aren't hidden
+      init(aptabaseKey, { appVersion, isDebug: false });
       trackEvent('app_started');
     }
   }, [enabled, aptabaseKey, appVersion]);
