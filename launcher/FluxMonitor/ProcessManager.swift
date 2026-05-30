@@ -191,10 +191,29 @@ class ProcessManager: ObservableObject {
             DispatchQueue.main.async {
                 (NSApp.delegate as? AppDelegate)?.updateMenu()
             }
+            fetchAptabaseKey(port: port)
         } catch {
             appendLog("ProcessManager: Failed to run process: \(error.localizedDescription)\n")
             isRunning = false
             self.process = nil
+        }
+    }
+    
+    private func fetchAptabaseKey(port: Int) {
+        guard let url = URL(string: "http://127.0.0.1:\(port)/api/analytics") else { return }
+        
+        DispatchQueue.global().asyncAfter(deadline: .now() + 3.0) {
+            let task = URLSession.shared.dataTask(with: url) { data, response, error in
+                guard let data = data,
+                      let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+                      let key = json["key"] as? String,
+                      !key.isEmpty else {
+                    return
+                }
+                AptabaseTracker.shared.setup(appKey: key)
+                AptabaseTracker.shared.trackEvent("本地服务启动")
+            }
+            task.resume()
         }
     }
     

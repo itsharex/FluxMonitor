@@ -21,6 +21,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
     func applicationDidFinishLaunching(_ notification: Notification) {
         AppDelegate.shared = self
         
+        AptabaseTracker.shared.tryInitializeFromBundle()
+        AptabaseTracker.shared.trackEvent("启动")
+        
         // Handle SIGTERM/SIGINT for clean cleanup when killed from terminal/scripts
         let signals = [SIGTERM, SIGINT]
         for sig in signals {
@@ -79,7 +82,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
             "autoStartService": true,
             "silentStart": false,
             "port": 4210,
-            "appLanguage": Language.system.rawValue
+            "appLanguage": Language.system.rawValue,
+            "SUEnableAutomaticChecks": true
         ])
         
         // Initialize Sparkle
@@ -384,6 +388,7 @@ class ConfigManager {
         
         if let data = try? JSONSerialization.data(withJSONObject: json, options: [.prettyPrinted]) {
             try? data.write(to: configFileUrl)
+            AptabaseTracker.shared.trackEvent("修改设置")
         }
     }
     

@@ -1,4 +1,5 @@
 import Foundation
+import AppKit
 
 class NetworkUtils {
     static func getLocalIPAddress() -> String {
@@ -33,5 +34,90 @@ class NetworkUtils {
             freeifaddrs(ifaddr)
         }
         return address ?? "localhost"
+    }
+}
+
+class AptabaseTracker {
+    static let shared = AptabaseTracker()
+    
+    private var appKey: String?
+    private var host: String = "https://aptabase.com"
+    private var sessionId: String = UUID().uuidString
+    private var isReady = false
+    private var queuedEvents: [(String, [String: Any])] = []
+    
+    func setup(appKey: String) {
+        if appKey.isEmpty { return }
+        self.appKey = appKey
+        let parts = appKey.components(separatedBy: "-")
+        if parts.count >= 2, parts[0] == "A" {
+            let region = parts[1].lowercased()
+            self.host = "https://\(region).aptabase.com"
+        }
+        self.isReady = true
+        for event in queuedEvents {
+            trackEvent(event.0, props: event.1)
+        }
+        queuedEvents.removeAll()
+    }
+    
+    func tryInitializeFromBundle() {
+        if let url = Bundle.main.url(forResource: "analytics", withExtension: "json"),
+           let data = try? Data(contentsOf: url),
+           let config = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+           let key = config["aptabaseKey"] as? String, !key.isEmpty {
+            setup(appKey: key)
+        }
+    }
+    
+    func trackEvent(_ eventName: String, props: [String: Any] = [:]) {
+        guard isReady, let appKey = appKey else {
+            queuedEvents.append((eventName, props))
+            return
+        }
+        
+        let urlString = "\(host)/api/v0/events"
+        guard let url = URL(string: urlString) else { return }
+        
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.setValue(appKey, forHTTPHeaderField: "App-Key")
+        
+        let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0"
+        let build = Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "1"
+        let osVersion = ProcessInfo.processInfo.operatingSystemVersionString
+        
+        let systemProps: [String: Any] = [
+            "osName": "macOS",
+            "osVersion": osVersion,
+            "locale": Locale.current.identifier,
+            "appVersion": version,
+            "appBuildNumber": build,
+            "sdkVersion": "aptabase-swift@0.3.0"
+        ]
+        
+        let payload: [String: Any] = [
+            "timestamp": ISO8601DateFormatter().string(from: Date()),
+            "sessionId": sessionId,
+            "eventName": eventName,
+            "systemProps": systemProps,
+            "props": props
+        ]
+        
+        let payloadArray = [payload]
+        
+        guard let dataPayload = try? JSONSerialization.data(withJSONObject: payloadArray) else { return }
+        request.httpBody = dataPayload
+        
+        URLSession.shared.dataTask(with: request) { _, response, error in
+            DispatchQueue.main.async {
+                if let error = error {
+                    ProcessManager.shared.appendLog("[Aptabase] Failed to track '\(eventName)': \(error.localizedDescription)\n")
+                } else if let response = response as? HTTPURLResponse, response.statusCode >= 200 && response.statusCode < 300 {
+                    ProcessManager.shared.appendLog("[Aptabase] Tracked event: \(eventName)\n")
+                }
+            }
+        }.resume()
     }
 }

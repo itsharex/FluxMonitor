@@ -244,6 +244,10 @@ cp config.example.json "$APP_DIR/Contents/Resources/config.example.json"
 rm -rf "$APP_DIR/Contents/Resources/package.json"
 cp package.json "$APP_DIR/Contents/Resources/package.json"
 
+if [ -f "analytics.json" ]; then
+    cp analytics.json "$APP_DIR/Contents/Resources/analytics.json"
+fi
+
 
 # Sign the app bundle
 # IDENTITY is either sourced from build.config or auto-detected above

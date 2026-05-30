@@ -41,9 +41,9 @@ struct AboutView: View {
                 .buttonStyle(.borderedProminent)
                 .tint(.blue)
 
-                if let urlObj = URL(string: "https://github.com/chentao1006/FluxMonitor") {
+                if let urlObj = URL(string: "https://github.com/chentao1006/FluxMonitor/issues") {
                     Link(destination: urlObj) {
-                        Label("GitHub", systemImage: "link")
+                        Label(i18n.t("feedback_suggestions"), systemImage: "link")
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, 4)
                     }
@@ -51,6 +51,7 @@ struct AboutView: View {
                 }
                 
                 Button(action: {
+                    AptabaseTracker.shared.trackEvent("检查更新")
                     AppDelegate.shared?.updaterController?.checkForUpdates(nil)
                 }) {
                     Label(i18n.t("check_updates"), systemImage: "arrow.clockwise")

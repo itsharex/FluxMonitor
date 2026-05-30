@@ -155,6 +155,7 @@ class InstaTunnelDownloader: ObservableObject {
                 appendLog("Binary moved and permissions fixed: \(destinationURL.path)\n")
                 DispatchQueue.main.async {
                     self.status = .completed
+                    AptabaseTracker.shared.trackEvent("公网更新")
                     self.completion?(true)
                     self.completion = nil
                 }

@@ -127,7 +127,8 @@ class I18N: ObservableObject {
         "scan_to_remote": "扫码体验",
         "android_alpha_notice": "注：Android 版目前处于 Alpha 测试阶段，请按以下步骤参与：",
         "join_group": "1. 加入 Google Group 测试组",
-        "download_android": "2. 前往 Play 商店下载"
+        "download_android": "2. 前往 Play 商店下载",
+        "feedback_suggestions": "反馈与建议"
     ]
     
     private let enDict = [
@@ -218,7 +219,8 @@ class I18N: ObservableObject {
         "scan_to_remote": "Scan to experience",
         "android_alpha_notice": "Note: Android is currently in Alpha. Please follow the steps below:",
         "join_group": "1. Join Google Group",
-        "download_android": "2. Download on Play Store"
+        "download_android": "2. Download on Play Store",
+        "feedback_suggestions": "Feedback & Suggestions"
     ]
 }
 
