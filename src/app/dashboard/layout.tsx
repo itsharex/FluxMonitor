@@ -44,6 +44,7 @@ export default function DashboardLayout({
 
   const features = config?.features || {};
   const version = config?.version || '';
+  const hostname = (config as any)?.hostname || '';
 
   useEffect(() => {
     const handleEsc = (e: KeyboardEvent) => {
@@ -81,7 +82,13 @@ export default function DashboardLayout({
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
             <h2 style={{ fontSize: '1.1rem', margin: 0, fontWeight: 700, letterSpacing: '0.05em', lineHeight: 1 }}>{t.login.title}</h2>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginTop: '2px' }}>
-              <span style={{ fontSize: '0.6rem', color: 'var(--color-text-muted)', fontWeight: 600, letterSpacing: '0.15em' }}>{t.login.logoText}</span>
+              {hostname ? (
+                <span style={{ fontSize: '0.65rem', color: 'var(--color-primary)', fontWeight: 700, padding: '0.1rem 0.3rem', background: 'var(--color-surface-bg)', borderRadius: '4px', border: '1px solid var(--color-surface-border)' }}>
+                  {hostname}
+                </span>
+              ) : (
+                <span style={{ fontSize: '0.6rem', color: 'var(--color-text-muted)', fontWeight: 600, letterSpacing: '0.15em' }}>{t.login.logoText}</span>
+              )}
               {version && <span style={{ fontSize: '0.55rem', color: 'var(--color-text-muted)', opacity: 0.6, fontWeight: 500 }}>v{version}</span>}
             </div>
           </div>
@@ -110,7 +117,13 @@ export default function DashboardLayout({
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
               <h2 style={{ fontSize: '1.25rem', margin: 0, fontWeight: 800, letterSpacing: '0.1em', lineHeight: 1 }}>{t.login.title}</h2>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginTop: '4px' }}>
-                <span style={{ fontSize: '0.65rem', color: 'var(--color-text-muted)', fontWeight: 600, letterSpacing: '0.3em', textIndent: '0.2em' }}>{t.login.logoText}</span>
+                {hostname ? (
+                  <span style={{ fontSize: '0.7rem', color: 'var(--color-primary)', fontWeight: 700, padding: '0.1rem 0.4rem', background: 'var(--color-surface-bg)', borderRadius: '4px', border: '1px solid var(--color-surface-border)' }}>
+                    {hostname}
+                  </span>
+                ) : (
+                  <span style={{ fontSize: '0.65rem', color: 'var(--color-text-muted)', fontWeight: 600, letterSpacing: '0.3em', textIndent: '0.2em' }}>{t.login.logoText}</span>
+                )}
                 {version && <span style={{ fontSize: '0.6rem', color: 'var(--color-text-muted)', opacity: 0.6, fontWeight: 500 }}>v{version}</span>}
               </div>
             </div>

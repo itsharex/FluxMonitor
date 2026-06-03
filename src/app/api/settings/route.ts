@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { getConfig, saveConfig } from '@/lib/config';
 import fs from 'fs';
 import path from 'path';
+import os from 'os';
 
 export async function GET() {
   try {
@@ -24,7 +25,8 @@ export async function GET() {
       success: true, 
       data: {
         ...safeConfig,
-        version
+        version,
+        hostname: os.hostname()
       }
     });
   } catch (error) {

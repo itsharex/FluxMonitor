@@ -23,18 +23,13 @@ export async function POST(request: Request) {
         .setExpirationTime(expirationTime)
         .sign(secretKey);
 
-      const isHttps = request.headers.get('x-forwarded-proto') === 'https' || request.url.startsWith('https://');
+      const response = NextResponse.json({ success: true });
+      response.headers.set(
+        'Set-Cookie',
+        `token=${token}; Path=/; Max-Age=${maxAge}; HttpOnly; SameSite=Lax`
+      );
 
-      const cookieStore = await cookies();
-      cookieStore.set('token', token, {
-        httpOnly: true,
-        secure: isHttps,
-        sameSite: 'lax',
-        maxAge: maxAge,
-        path: '/',
-      });
-
-      return NextResponse.json({ success: true });
+      return response;
     }
 
     return NextResponse.json({ error: 'INVALID_CREDENTIALS' }, { status: 401 });

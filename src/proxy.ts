@@ -4,8 +4,8 @@ import { jwtVerify } from "jose";
 export async function proxy(request: NextRequest) {
   const path = request.nextUrl.pathname;
 
-  // Protect /dashboard routes and /api routes (except /api/auth/login)
-  const isProtectedRoute = path.startsWith('/dashboard') || (path.startsWith('/api') && !path.startsWith('/api/auth/login'));
+  // Protect /dashboard routes and /api routes (except /api/auth/login and /api/info)
+  const isProtectedRoute = path.startsWith('/dashboard') || (path.startsWith('/api') && !path.startsWith('/api/auth/login') && !path.startsWith('/api/info'));
 
   if (isProtectedRoute) {
     const token = request.cookies.get('token')?.value;

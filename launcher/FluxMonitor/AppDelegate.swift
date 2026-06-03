@@ -388,7 +388,6 @@ class ConfigManager {
         
         if let data = try? JSONSerialization.data(withJSONObject: json, options: [.prettyPrinted]) {
             try? data.write(to: configFileUrl)
-            AptabaseTracker.shared.trackEvent("修改设置")
         }
     }
     
