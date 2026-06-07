@@ -9,6 +9,7 @@ import SudoModal from '@/components/SudoModal';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { streamAiContent } from '@/lib/aiStream';
+import { PlistVisualEditor } from '@/components/PlistVisualEditor';
 
 interface PlistItem {
   name: string;
@@ -49,6 +50,7 @@ export default function LaunchAgentDashboard() {
   const [editName, setEditName] = useState('');
   const [fileContent, setFileContent] = useState('');
   const [saveStatus, setSaveStatus] = useState('');
+  const [editorMode, setEditorMode] = useState<'visual' | 'code'>('visual');
 
   const [analysisResult, setAnalysisResult] = useState('');
   const [isAiAnalyzing, setIsAiAnalyzing] = useState(false);
@@ -490,7 +492,7 @@ export default function LaunchAgentDashboard() {
                   <input
                     type="text"
                     className="input-inline"
-                    style={{ fontWeight: 600, fontSize: '0.95rem', border: 'none', background: 'transparent', width: '100%' }}
+                    style={{ fontWeight: 600, fontSize: '0.95rem', border: 'none', background: 'transparent', width: '100%', color: 'var(--color-text-header)' }}
                     value={editName}
                     onChange={(e) => setEditName(e.target.value)}
                     placeholder={t.launchagent.newConfigPrompt}
@@ -550,13 +552,32 @@ export default function LaunchAgentDashboard() {
                 </div>
               )}
 
-              <textarea
-                className="input"
-                style={{ flex: 1, fontFamily: 'monospace', fontSize: '0.85rem', padding: '1.5rem', resize: 'none', border: 'none', outline: 'none', background: 'transparent' }}
-                value={fileContent}
-                onChange={(e) => setFileContent(e.target.value)}
-                spellCheck={false}
-              />
+              <div style={{ display: 'flex', borderBottom: '1px solid var(--color-surface-border)', background: 'var(--color-surface-bg)' }}>
+                <button 
+                  onClick={() => setEditorMode('visual')}
+                  style={{ padding: '0.5rem 1rem', background: 'transparent', border: 'none', borderBottom: editorMode === 'visual' ? '2px solid var(--color-primary)' : '2px solid transparent', color: editorMode === 'visual' ? 'var(--color-primary)' : 'var(--color-text-muted)', cursor: 'pointer', fontWeight: 600, fontSize: '0.85rem' }}
+                >
+                  {t.launchagent.visualMode || 'Visual Mode'}
+                </button>
+                <button 
+                  onClick={() => setEditorMode('code')}
+                  style={{ padding: '0.5rem 1rem', background: 'transparent', border: 'none', borderBottom: editorMode === 'code' ? '2px solid var(--color-primary)' : '2px solid transparent', color: editorMode === 'code' ? 'var(--color-primary)' : 'var(--color-text-muted)', cursor: 'pointer', fontWeight: 600, fontSize: '0.85rem' }}
+                >
+                  {t.launchagent.codeMode || 'Code Mode'}
+                </button>
+              </div>
+
+              {editorMode === 'visual' ? (
+                <PlistVisualEditor xml={fileContent} onChange={setFileContent} />
+              ) : (
+                <textarea
+                  className="input"
+                  style={{ flex: 1, fontFamily: 'monospace', fontSize: '0.85rem', padding: '1.5rem', resize: 'none', border: 'none', outline: 'none', background: 'transparent' }}
+                  value={fileContent}
+                  onChange={(e) => setFileContent(e.target.value)}
+                  spellCheck={false}
+                />
+              )}
 
               <div style={{ padding: '0.5rem 1rem', background: 'var(--color-surface-bg)', borderTop: '1px solid var(--color-surface-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <span className="save-status" style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', visibility: saveStatus ? 'visible' : 'hidden' }}>

@@ -65,6 +65,26 @@ export default function DockerDashboard() {
   }, [currentLogs, isLogsOpen]);
 
   useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (isLogsOpen && diagnosisId) {
+      interval = setInterval(async () => {
+        try {
+          const res = await fetch(`/api/docker/logs?id=${diagnosisId}`);
+          const data = await res.json();
+          if (data.success) {
+            setCurrentLogs(data.logs || t.docker.noLogs);
+          }
+        } catch (e) {
+          // silent error on interval
+        }
+      }, 5000);
+    }
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [isLogsOpen, diagnosisId, t.docker.noLogs]);
+
+  useEffect(() => {
     setAnalysisResult('');
     setDiagnosisId(null);
   }, [activeTab]);
