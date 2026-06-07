@@ -5,6 +5,7 @@ import { translations, Language, TranslationKeys, SUPPORTED_LANGUAGES } from './
 
 interface LanguageContextType {
   language: Language | 'auto';
+  systemLang: Language;
   effectiveLang: Language;
   setLanguage: (lang: Language | 'auto') => void;
   t: TranslationKeys;
@@ -40,8 +41,24 @@ export function LanguageProvider({
     let detected: Language = 'zh';
 
     if (typeof navigator !== 'undefined') {
-      const systemLangs = navigator.languages.map(l => l.split('-')[0].toLowerCase());
-      detected = (systemLangs.find(l => SUPPORTED_LANGUAGES.includes(l as Language)) as Language) || 'zh';
+      const systemLangs = navigator.languages;
+      // First attempt to match exact or base languages from navigator
+      for (const lang of systemLangs) {
+        const lowerLang = lang.toLowerCase();
+        if (lowerLang.startsWith('zh-tw') || lowerLang.startsWith('zh-hk') || lowerLang.startsWith('zh-hant')) {
+          detected = 'zh-TW';
+          break;
+        }
+        if (lowerLang.startsWith('zh-cn') || lowerLang.startsWith('zh-hans') || lowerLang === 'zh') {
+          detected = 'zh';
+          break;
+        }
+        const baseLang = lowerLang.split('-')[0] as Language;
+        if (SUPPORTED_LANGUAGES.includes(baseLang) && baseLang !== 'zh' && baseLang !== 'zh-TW') {
+          detected = baseLang;
+          break;
+        }
+      }
     }
 
     const initialLang = (savedLang && SUPPORTED_LANGUAGES.includes(savedLang as Language)) ? savedLang : 'auto';
@@ -85,10 +102,11 @@ export function LanguageProvider({
 
   const value = useMemo(() => ({
     language,
+    systemLang,
     effectiveLang,
     setLanguage: handleSetLanguage,
     t: translations[effectiveLang] as TranslationKeys,
-  }), [language, effectiveLang, handleSetLanguage]);
+  }), [language, systemLang, effectiveLang, handleSetLanguage]);
 
   return (
     <LanguageContext.Provider value={value}>

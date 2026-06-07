@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import { useLanguage } from '@/lib/LanguageContext';
-import { SUPPORTED_LANGUAGES, LANGUAGE_NAMES } from '@/lib/translations';
+import { SUPPORTED_LANGUAGES, LANGUAGE_NAMES, translations } from '@/lib/translations';
 import { useSettings } from '@/lib/SettingsContext';
 import { Languages, Sun, Moon, SunMoon, Smartphone } from 'lucide-react';
 import GlobalTerminal from '@/components/GlobalTerminal';
@@ -16,7 +16,7 @@ export default function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const { t, language, setLanguage } = useLanguage();
+  const { t, language, setLanguage, systemLang } = useLanguage();
   const { theme, setTheme } = useTheme();
   const { config, loading: settingsLoading } = useSettings();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -200,7 +200,7 @@ export default function DashboardLayout({
                         style={{ justifyContent: 'flex-start', fontSize: '0.75rem' }}
                         onClick={() => { setLanguage('auto'); setIsLangMenuOpen(false); }}
                       >
-                        {t.common.systemDefault}
+                        {translations[systemLang].common.systemDefault}
                       </button>
                       {SUPPORTED_LANGUAGES.map(lang => (
                         <button

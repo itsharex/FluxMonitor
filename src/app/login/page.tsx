@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useLanguage } from '@/lib/LanguageContext';
+import { SUPPORTED_LANGUAGES, LANGUAGE_NAMES, translations } from '@/lib/translations';
 import { Globe } from 'lucide-react';
 
 export default function LoginPage() {
@@ -12,7 +13,7 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [autoLogin, setAutoLogin] = useState(false);
   const router = useRouter();
-  const { language, setLanguage, t } = useLanguage();
+  const { language, setLanguage, t, systemLang } = useLanguage();
   const [mounted, setMounted] = useState(false);
   const [systemInfo, setSystemInfo] = useState<{version: string, hostname: string} | null>(null);
 
@@ -72,13 +73,14 @@ export default function LoginPage() {
             <Globe size={18} style={{ color: 'var(--color-text-muted)' }} />
             <select
               value={language}
-              onChange={(e) => setLanguage(e.target.value as 'zh' | 'en' | 'auto')}
+              onChange={(e) => setLanguage(e.target.value as any)}
               className="input"
               style={{ padding: '0.3rem 1.5rem 0.3rem 0.6rem', fontSize: '0.85rem', height: 'auto', background: 'var(--color-surface-bg)', backdropFilter: 'blur(16px)', border: '1px solid var(--color-surface-border)', cursor: 'pointer' }}
             >
-              <option value="auto">{t.common.systemDefault}</option>
-              <option value="zh">中文</option>
-              <option value="en">English</option>
+              <option value="auto">{translations[systemLang].common.systemDefault}</option>
+              {SUPPORTED_LANGUAGES.map(lang => (
+                <option key={lang} value={lang}>{LANGUAGE_NAMES[lang]}</option>
+              ))}
             </select>
           </>
         )}

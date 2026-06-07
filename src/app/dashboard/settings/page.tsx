@@ -26,18 +26,18 @@ export default function SettingsPage() {
     });
   }
 
-  const handleSave = async () => {
+  const saveConfig = async (newConfig: AppConfig) => {
     setSaveStatus(t.settings.saving);
     try {
       const res = await fetch('/api/settings', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(config),
+        body: JSON.stringify(newConfig),
       });
       const data = await res.json();
       if (data.success) {
         setSaveStatus(t.settings.saveSuccess);
-        if (config) updateConfig(config);
+        updateConfig(newConfig);
         setTimeout(() => {
           setSaveStatus('');
         }, 3000);
@@ -47,6 +47,10 @@ export default function SettingsPage() {
     } catch {
       setSaveStatus(t.common.networkError);
     }
+  };
+
+  const handleSave = () => {
+    if (config) saveConfig(config);
   };
 
   const updateAI = (field: string, value: string) => {
@@ -59,10 +63,12 @@ export default function SettingsPage() {
 
   const updateFeature = (feature: string, enabled: boolean) => {
     if (!config) return;
-    setConfig({
+    const newConfig = {
       ...config,
       features: { ...config.features, [feature]: enabled }
-    });
+    };
+    setConfig(newConfig);
+    saveConfig(newConfig);
   };
 
   const updateUser = (index: number, field: string, value: string) => {
@@ -90,8 +96,20 @@ export default function SettingsPage() {
       </div>
 
       {saveStatus && (
-        <div className={`badge ${saveStatus.includes('成功') || saveStatus.includes('Success') ? 'badge-success' : 'badge-danger'}`} style={{ padding: '0.75rem 1rem', width: 'fit-content' }}>
-          {saveStatus}
+        <div style={{ position: 'fixed', top: '2rem', left: 0, right: 0, display: 'flex', justifyContent: 'center', pointerEvents: 'none', zIndex: 9999 }}>
+          <div 
+            className={`badge ${saveStatus.includes('成功') || saveStatus.includes('Success') ? 'badge-success' : 'badge-danger'} animate-fade-in`} 
+            style={{ 
+              padding: '0.75rem 1.5rem', 
+              fontSize: '0.95rem',
+              boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.2), 0 8px 10px -6px rgba(0, 0, 0, 0.1)',
+              backdropFilter: 'blur(10px)',
+              border: '1px solid var(--color-surface-border)',
+              pointerEvents: 'auto'
+            }}
+          >
+            {saveStatus}
+          </div>
         </div>
       )}
 

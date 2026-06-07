@@ -126,7 +126,6 @@ struct ServiceView: View {
                     )
             }
         }
-        .padding()
         .onAppear {
             localIP = "localhost"
             loadConfig()
