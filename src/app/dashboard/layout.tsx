@@ -30,7 +30,9 @@ export default function DashboardLayout({
       const isDismissed = localStorage.getItem('ios_guide_dismissed');
       if (!isDismissed) {
         const timer = setTimeout(() => {
-          setIsAppGuideOpen(true);
+          if (window.innerWidth >= 1024) {
+            setIsAppGuideOpen(true);
+          }
         }, 1500);
         return () => clearTimeout(timer);
       }
@@ -142,7 +144,7 @@ export default function DashboardLayout({
             {features?.nginx !== false && <NavLink href="/dashboard/nginx" icon="server" onClick={() => setIsMenuOpen(false)}>{t.sidebar.nginx}</NavLink>}
           </nav>
           
-          <div style={{ padding: '0 0.75rem', marginBottom: '0.5rem' }}>
+          <div className="desktop-only" style={{ padding: '0 0.75rem', marginBottom: '0.5rem' }}>
             <button 
               onClick={() => setIsAppGuideOpen(true)}
               className="btn btn-primary"
