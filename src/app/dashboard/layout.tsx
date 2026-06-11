@@ -333,9 +333,9 @@ function NavLink({ href, children, icon, onClick, isIconOnly, title }: { href: s
         height: isIconOnly ? '42px' : 'auto',
         justifyContent: isIconOnly ? 'center' : 'flex-start',
         padding: isIconOnly ? '0' : '0.85rem 1rem',
-        borderRadius: 'var(--radius-sm)', gap: '0.75rem', fontWeight: 500,
-        background: isActive ? 'var(--color-primary-light)' : '',
-        color: isActive ? 'var(--color-primary)' : ''
+        borderRadius: 'var(--radius-md)', gap: '0.75rem', fontWeight: 500,
+        background: isActive ? 'var(--color-sidebar-active-bg)' : '',
+        color: isActive ? 'var(--color-sidebar-active-text)' : ''
       }}>
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <g>{getIcon(icon)}</g>

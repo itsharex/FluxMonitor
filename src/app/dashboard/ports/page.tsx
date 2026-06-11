@@ -245,7 +245,7 @@ export default function PortsPage() {
         </div>
       </div>
 
-      <div className="card glass-panel port-toolbar no-scrollbar">
+      <div className="port-toolbar no-scrollbar" style={{ padding: 0 }}>
         <div className="port-toolbar-stats">
           <span><strong>{summary.ports}</strong>{t.ports.usedPorts}</span>
           <span><strong>{summary.processes}</strong>{t.ports.processGroups}</span>

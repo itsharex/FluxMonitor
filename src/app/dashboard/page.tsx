@@ -420,7 +420,7 @@ export default function DashboardOverview() {
         <div className="card glass-panel chart-card" style={{ padding: '1rem', minHeight: '200px', display: 'flex', flexDirection: 'column' }}>
           <div style={{ marginBottom: '0.5rem', width: '100%' }}>
             <h3 style={{ color: 'var(--color-text-muted)', fontSize: '0.8rem', marginBottom: '0.25rem' }}>{t.monitor.cpuChart}</h3>
-            <div style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--color-primary)' }}>
+            <div style={{ fontSize: '1.25rem', fontWeight: 700, color: '#3b82f6' }}>
               {history.length > 0 ? `${history[history.length - 1].cpu}%` : 'N/A'}
             </div>
             <div style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', marginTop: '0.1rem' }}>
@@ -432,8 +432,8 @@ export default function DashboardOverview() {
               <AreaChart data={history} margin={{ top: 10, right: 0, left: -25, bottom: 0 }}>
                 <defs>
                   <linearGradient id="colorCpu" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="var(--color-primary)" stopOpacity={0.8} />
-                    <stop offset="95%" stopColor="var(--color-primary)" stopOpacity={0} />
+                    <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.8} />
+                    <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--color-surface-border)" />
@@ -444,7 +444,7 @@ export default function DashboardOverview() {
                   itemStyle={{ color: 'var(--color-text)' }}
                   labelStyle={{ color: 'var(--color-text)' }}
                 />
-                <Area type="monotone" dataKey="cpu" name="CPU (%)" stroke="var(--color-primary)" strokeWidth={2} fillOpacity={1} fill="url(#colorCpu)" isAnimationActive={false} />
+                <Area type="monotone" dataKey="cpu" name="CPU (%)" stroke="#3b82f6" strokeWidth={2} fillOpacity={1} fill="url(#colorCpu)" isAnimationActive={false} />
               </AreaChart>
             </ResponsiveContainer>
           </div>
@@ -487,8 +487,8 @@ export default function DashboardOverview() {
           <div style={{ marginBottom: '0.5rem', width: '100%' }}>
             <h3 style={{ color: 'var(--color-text-muted)', fontSize: '0.8rem', marginBottom: '0.25rem' }}>{t.monitor.networkChart}</h3>
             <div style={{ fontSize: '1.25rem', fontWeight: 700, display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-              <span style={{ color: '#10b981' }}>↓ {history.length > 0 ? history[history.length - 1].netIn : '0'}</span>
-              <span style={{ color: '#8b5cf6' }}>↑ {history.length > 0 ? history[history.length - 1].netOut : '0'}</span>
+              <span style={{ color: '#3b82f6' }}>↓ {history.length > 0 ? history[history.length - 1].netIn : '0'}</span>
+              <span style={{ color: '#10b981' }}>↑ {history.length > 0 ? history[history.length - 1].netOut : '0'}</span>
             </div>
             <div style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', marginTop: '0.1rem' }}>
               {stats?.network?.split(',').slice(0, 2).join(',') || 'N/A'} ({t.monitor.accumulated})
@@ -499,20 +499,20 @@ export default function DashboardOverview() {
               <AreaChart data={history} margin={{ top: 10, right: 0, left: -25, bottom: 0 }}>
                 <defs>
                   <linearGradient id="colorNetIn" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#10b981" stopOpacity={0.8} />
-                    <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
+                    <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.8} />
+                    <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
                   </linearGradient>
                   <linearGradient id="colorNetOut" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.8} />
-                    <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0} />
+                    <stop offset="5%" stopColor="#10b981" stopOpacity={0.8} />
+                    <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--color-surface-border)" />
                 <XAxis dataKey="time" hide />
                 <YAxis domain={['auto', 'auto']} stroke="var(--color-text-muted)" fontSize={11} tickLine={false} axisLine={false} />
                 <Tooltip contentStyle={{ background: 'rgba(255,255,255,0.9)' }} />
-                <Area type="monotone" dataKey="netIn" name={t.monitor.down} stroke="#10b981" strokeWidth={2} fillOpacity={1} fill="url(#colorNetIn)" isAnimationActive={false} />
-                <Area type="monotone" dataKey="netOut" name={t.monitor.up} stroke="#8b5cf6" strokeWidth={2} fillOpacity={1} fill="url(#colorNetOut)" isAnimationActive={false} />
+                <Area type="monotone" dataKey="netIn" name={t.monitor.down} stroke="#3b82f6" strokeWidth={2} fillOpacity={1} fill="url(#colorNetIn)" isAnimationActive={false} />
+                <Area type="monotone" dataKey="netOut" name={t.monitor.up} stroke="#10b981" strokeWidth={2} fillOpacity={1} fill="url(#colorNetOut)" isAnimationActive={false} />
               </AreaChart>
             </ResponsiveContainer>
           </div>

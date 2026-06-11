@@ -237,7 +237,7 @@ export default function ProcessManager() {
       </div>
 
       {/* Toolbar */}
-      <div className="card glass-panel" style={{ padding: '1rem' }}>
+      <div>
         <div className="responsive-grid responsive-grid-auto" style={{ gap: '1rem' }}>
           <div style={{ position: 'relative', flex: 1 }}>
             <Search size={16} style={{ position: 'absolute', left: '0.75rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-text-muted)' }} />
