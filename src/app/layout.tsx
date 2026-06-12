@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { cookies, headers } from "next/headers";
+import os from "os";
 import { translations, Language, SUPPORTED_LANGUAGES } from "@/lib/translations";
 import "./globals.css";
 
@@ -24,8 +25,12 @@ export async function generateMetadata(): Promise<Metadata> {
   const t = translations[effectiveLang] || translations.zh;
 
   return {
-    title: t.appTitle,
+    title: `${t.appTitle} - ${os.hostname()}`,
     description: t.appDesc,
+    robots: {
+      index: false,
+      follow: false,
+    },
   };
 }
 

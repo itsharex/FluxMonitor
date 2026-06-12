@@ -591,7 +591,7 @@ export default function NginxDashboard() {
           <div className="flex-between" style={{ marginBottom: '0.75rem' }}>
             <h3 style={{ color: 'var(--color-text-muted)', fontSize: '0.9rem', margin: 0 }}>{t.nginx.controlPanel}</h3>
             <div style={{ fontSize: '0.85rem', color: 'var(--color-text-muted)' }}>
-              {t.nginx.pids}: <span style={{ fontWeight: 600, color: 'var(--color-text)' }}>{isRunning ? (pids.length > 0 ? pids.join(', ') : t.common.unknown) : t.common.none}</span>
+              {t.nginx.pids}: <span style={{ fontWeight: isRunning && pids.length > 0 ? 600 : 400, color: isRunning && pids.length > 0 ? 'var(--color-text)' : 'var(--color-text-muted)' }}>{isRunning ? (pids.length > 0 ? pids.join(', ') : t.common.unknown) : t.common.none}</span>
             </div>
           </div>
 

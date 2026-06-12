@@ -637,25 +637,6 @@ export default function GlobalTerminal() {
                 </button>
               )}
             </div>
-            {isExecuting ? (
-              <button 
-                type="button" 
-                className="btn btn-danger" 
-                onClick={(e) => stopCommand(e)}
-                style={{ width: '100px' }}
-              >
-                <Square size={16} fill="white" style={{ marginRight: '6px' }} /> {t.common.stop}
-              </button>
-            ) : (
-              <button 
-                type="submit" 
-                className="btn btn-primary" 
-                disabled={!cmd}
-                style={{ width: '100px', display: 'flex', gap: '8px' }}
-              >
-                <Play size={16} fill="white" /> {t.common.run}
-              </button>
-            )}
             <button
               type="button"
               className="btn"
@@ -675,6 +656,25 @@ export default function GlobalTerminal() {
               <Sparkles size={16} className={aiLoading ? 'animate-pulse' : ''} />
               {aiLoading ? t.monitor.translating : t.monitor.aiTranslate}
             </button>
+            {isExecuting ? (
+              <button 
+                type="button" 
+                className="btn btn-danger" 
+                onClick={(e) => stopCommand(e)}
+                style={{ width: '100px' }}
+              >
+                <Square size={16} fill="white" style={{ marginRight: '6px' }} /> {t.common.stop}
+              </button>
+            ) : (
+              <button 
+                type="submit" 
+                className="btn btn-primary" 
+                disabled={!cmd}
+                style={{ width: '100px', display: 'flex', gap: '8px' }}
+              >
+                <Play size={16} fill="white" /> {t.common.run}
+              </button>
+            )}
           </form>
 
           <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '1rem', minHeight: 0 }}>

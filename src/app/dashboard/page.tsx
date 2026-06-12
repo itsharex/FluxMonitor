@@ -416,7 +416,8 @@ export default function DashboardOverview() {
       )}
 
 
-      <div className="responsive-grid responsive-grid-2">
+      <h2 style={{ fontSize: '1.1rem', fontWeight: 600, color: 'var(--color-text)', marginTop: '0rem', marginBottom: '-0.5rem' }}>实时指标</h2>
+      <div className="responsive-grid responsive-grid-3">
         <div className="card glass-panel chart-card" style={{ padding: '1rem', minHeight: '200px', display: 'flex', flexDirection: 'column' }}>
           <div style={{ marginBottom: '0.5rem', width: '100%' }}>
             <h3 style={{ color: 'var(--color-text-muted)', fontSize: '0.8rem', marginBottom: '0.25rem' }}>{t.monitor.cpuChart}</h3>
@@ -437,7 +438,7 @@ export default function DashboardOverview() {
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--color-surface-border)" />
-                <XAxis dataKey="time" hide />
+                <XAxis dataKey="time" stroke="var(--color-text-muted)" fontSize={10} tickLine={false} axisLine={false} minTickGap={30} />
                 <YAxis domain={[0, 100]} stroke="var(--color-text-muted)" fontSize={11} tickLine={false} axisLine={false} />
                 <Tooltip
                   contentStyle={{ background: 'var(--color-surface-bg)', backdropFilter: 'blur(10px)', borderRadius: '8px', border: '1px solid var(--color-surface-border)' }}
@@ -470,7 +471,7 @@ export default function DashboardOverview() {
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--color-surface-border)" />
-                <XAxis dataKey="time" hide />
+                <XAxis dataKey="time" stroke="var(--color-text-muted)" fontSize={10} tickLine={false} axisLine={false} minTickGap={30} />
                 <YAxis domain={[0, 100]} stroke="var(--color-text-muted)" fontSize={11} tickLine={false} axisLine={false} />
                 <Tooltip
                   contentStyle={{ background: 'rgba(255,255,255,0.9)', backdropFilter: 'blur(10px)', borderRadius: '8px', border: '1px solid var(--color-surface-border)' }}
@@ -480,9 +481,6 @@ export default function DashboardOverview() {
             </ResponsiveContainer>
           </div>
         </div>
-      </div>
-
-      <div className="responsive-grid responsive-grid-2">
         <div className="card glass-panel chart-card" style={{ padding: '1rem', minHeight: '200px', display: 'flex', flexDirection: 'column' }}>
           <div style={{ marginBottom: '0.5rem', width: '100%' }}>
             <h3 style={{ color: 'var(--color-text-muted)', fontSize: '0.8rem', marginBottom: '0.25rem' }}>{t.monitor.networkChart}</h3>
@@ -508,7 +506,7 @@ export default function DashboardOverview() {
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--color-surface-border)" />
-                <XAxis dataKey="time" hide />
+                <XAxis dataKey="time" stroke="var(--color-text-muted)" fontSize={10} tickLine={false} axisLine={false} minTickGap={30} />
                 <YAxis domain={['auto', 'auto']} stroke="var(--color-text-muted)" fontSize={11} tickLine={false} axisLine={false} />
                 <Tooltip contentStyle={{ background: 'rgba(255,255,255,0.9)' }} />
                 <Area type="monotone" dataKey="netIn" name={t.monitor.down} stroke="#3b82f6" strokeWidth={2} fillOpacity={1} fill="url(#colorNetIn)" isAnimationActive={false} />
@@ -518,30 +516,11 @@ export default function DashboardOverview() {
           </div>
         </div>
 
-        <div className="card glass-panel" style={{ padding: '1.25rem', minHeight: '200px' }}>
-          <div className="info-grid-container" style={{ display: 'flex', gap: '1.5rem', flexWrap: 'wrap' }}>
-            <div style={{ flex: '1 1 200px', display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
-              <StatRow label={t.monitor.hostname} value={stats?.hostname} />
-              <StatRow label={t.monitor.loadAvg} value={stats?.loadAvg} color="var(--color-primary)" />
-              <StatRow label={t.monitor.uptime} value={stats?.uptime?.split(',')[0]?.split('up')[1]?.trim()} />
-              <StatRow label={t.monitor.diskSpace} value={`${stats?.disk?.used} / ${stats?.disk?.total}`} />
-              <StatRow label={t.monitor.kernel} value={stats?.kernel} />
-              <StatRow label={t.monitor.cpuModel} value={stats?.cpuModel} small />
-            </div>
-            <div style={{ flex: '1 1 200px', display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
-              <StatRow label={t.monitor.swap} value={stats?.swap} />
-              <StatRow label={t.monitor.arch} value={stats?.arch} />
-              <StatRow label={t.monitor.memPressure} value={stats?.memPressure} />
-              <StatRow label={t.monitor.osVersion} value={stats?.osVersion} />
-              <StatRow label={t.monitor.network} value={stats?.network?.split(',')[0]?.replace('in', '↓')} />
-              <StatRow label={t.monitor.battery} value={stats?.battery} color="#10b981" />
-            </div>
-          </div>
-        </div>
       </div>
 
       {/* Summary Cards Row */}
-      <div className="responsive-grid responsive-grid-3" style={{ marginBottom: '1.5rem' }}>
+      <h2 style={{ fontSize: '1.1rem', fontWeight: 600, color: 'var(--color-text)', marginTop: '0.5rem', marginBottom: '-0.5rem' }}>单元概览</h2>
+      <div className="responsive-grid responsive-grid-3">
         {features?.processes !== false && (
           <Link href="/dashboard/processes" style={{ textDecoration: 'none', display: 'block' }}>
             <div className="stat-card glass-panel">
@@ -677,15 +656,41 @@ export default function DashboardOverview() {
           </Link>
         )}
       </div>
+
+      {/* Info Card Row */}
+      <h2 style={{ fontSize: '1.1rem', fontWeight: 600, color: 'var(--color-text)', marginTop: '0.5rem', marginBottom: '-0.5rem' }}>系统信息</h2>
+      <div className="responsive-grid responsive-grid-3">
+        <div className="card glass-panel" style={{ padding: '1.25rem', display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
+          <StatRow label={t.monitor.hostname} value={stats?.hostname} />
+          <StatRow label={t.monitor.osVersion} value={stats?.osVersion} />
+          <StatRow label={t.monitor.kernel} value={stats?.kernel} />
+          <StatRow label={t.monitor.arch} value={stats?.arch} />
+        </div>
+        <div className="card glass-panel" style={{ padding: '1.25rem', display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
+          <StatRow label={t.monitor.uptime} value={stats?.uptime?.split(',')[0]?.split('up')[1]?.trim()} />
+          <StatRow label={t.monitor.loadAvg} value={stats?.loadAvg} color="var(--color-primary)" />
+          <StatRow label={t.monitor.cpuModel} value={stats?.cpuModel} small />
+          <StatRow label={t.monitor.memPressure} value={stats?.memPressure} />
+        </div>
+        <div className="card glass-panel" style={{ padding: '1.25rem', display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
+          <StatRow label={t.monitor.diskSpace} value={`${stats?.disk?.used} / ${stats?.disk?.total}`} />
+          <StatRow label={t.monitor.swap} value={stats?.swap} />
+          <StatRow label={t.monitor.network} value={stats?.network?.split(',')[0]?.replace('in', '↓')} />
+          <StatRow label={t.monitor.battery} value={stats?.battery} color="#10b981" />
+        </div>
+      </div>
     </div>
   );
 }
 
 function StatRow({ label, value, color, small }: { label: string; value: string; color?: string; small?: boolean }) {
+  const displayValue = value || 'N/A';
+  const isUnknown = typeof displayValue === 'string' && (displayValue.toLowerCase() === 'unknown' || displayValue.toLowerCase() === 'n/a');
+  const finalColor = isUnknown ? 'var(--color-text-muted)' : (color || 'var(--color-text)');
   return (
     <div className="flex-between" style={{ padding: '0.2rem 0' }}>
       <span style={{ fontSize: small ? '0.7rem' : '0.8rem', color: 'var(--color-text-muted)' }}>{label}</span>
-      <span style={{ fontSize: small ? '0.7rem' : '0.85rem', fontWeight: 600, color: color || 'var(--color-text)' }}>{value || 'N/A'}</span>
+      <span style={{ fontSize: small ? '0.7rem' : '0.85rem', fontWeight: isUnknown ? 400 : 600, color: finalColor }}>{displayValue}</span>
     </div>
   );
 }
