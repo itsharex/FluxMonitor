@@ -35,10 +35,20 @@ interface Process {
   command: string;
 }
 
+interface ProcessDetail extends Process {
+  ppid: string;
+  ppidName?: string;
+  state: string;
+  start: string;
+  time: string;
+  fullCommand: string;
+  openFiles?: string[];
+}
+
 export default function ProcessManager() {
   const { t } = useLanguage();
   const { config } = useSettings();
-  const [processes, setProcesses] = useState<any[]>([]);
+  const [processes, setProcesses] = useState<Process[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [sortField, setSortField] = useState<'cpu' | 'mem' | 'pid' | 'command' | 'user'>('cpu');
@@ -47,7 +57,7 @@ export default function ProcessManager() {
   const [autoRefresh, setAutoRefresh] = useState(true);
   const [refreshInterval, setRefreshInterval] = useState(5000);
   const [selectedPid, setSelectedPid] = useState<string | null>(null);
-  const [processDetail, setProcessDetail] = useState<any>(null);
+  const [processDetail, setProcessDetail] = useState<ProcessDetail | null>(null);
   const [loadingDetail, setLoadingDetail] = useState(false);
   const [aiAnalysis, setAiAnalysis] = useState<string | null>(null);
   const [analyzing, setAnalyzing] = useState(false);
@@ -195,8 +205,8 @@ export default function ProcessManager() {
         return matchesSearch && matchesUser;
       })
       .sort((a, b) => {
-        let valA: any = a[sortField as keyof Process];
-        let valB: any = b[sortField as keyof Process];
+        let valA: string | number = a[sortField as keyof Process];
+        let valB: string | number = b[sortField as keyof Process];
 
         if (sortField === 'cpu' || sortField === 'mem') {
           valA = parseFloat(valA);

@@ -46,7 +46,7 @@ export default function DashboardLayout({
 
   const features = config?.features || {};
   const version = config?.version || '';
-  const hostname = (config as any)?.hostname || '';
+  const hostname = (config as unknown as Record<string, unknown>)?.hostname as string || '';
 
   useEffect(() => {
     const handleEsc = (e: KeyboardEvent) => {

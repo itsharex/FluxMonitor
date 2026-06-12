@@ -38,7 +38,7 @@ export function AnalyticsProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const stored = localStorage.getItem('analytics_enabled');
     if (stored !== null) {
-      setEnabledState(stored === 'true');
+      setTimeout(() => setEnabledState(stored === 'true'), 0);
     } else {
       // Delay prompt by 30 seconds to let user see the UI first
       const timer = setTimeout(() => {

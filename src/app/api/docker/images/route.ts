@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextResponse } from 'next/server';
 import { execAsync } from '@/lib/exec';
 
@@ -54,7 +55,7 @@ export async function GET() {
       success: true,
       data: finalImages,
     });
-  } catch (error: any) {
+  } catch (e: unknown) { const error = e as { code?: string; stderr?: string; message?: string };
     const message = error?.message || '';
     if (message.includes('command not found')) {
       return NextResponse.json({

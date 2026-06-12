@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { spawn } from 'child_process';
 import { NextResponse } from 'next/server';
 import { EXEC_ENV } from '@/lib/exec';
@@ -20,11 +21,11 @@ export async function POST(request: Request) {
           env: EXEC_ENV
         });
 
-        childProcess.stdout.on('data', (data: any) => {
+        childProcess.stdout.on('data', (data: Buffer | string) => {
           controller.enqueue(encoder.encode(data.toString()));
         });
 
-        childProcess.stderr.on('data', (data: any) => {
+        childProcess.stderr.on('data', (data: Buffer | string) => {
           controller.enqueue(encoder.encode(data.toString()));
         });
 
@@ -53,7 +54,7 @@ export async function POST(request: Request) {
         'Transfer-Encoding': 'chunked',
       },
     });
-  } catch (error: any) {
+  } catch (e: unknown) { const error = e as { code?: string; stderr?: string; message?: string };
     return new Response(JSON.stringify({
       error: 'COMMAND_EXEC_ERROR',
       details: error?.message || 'UNKNOWN_ERROR'

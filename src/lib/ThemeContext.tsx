@@ -30,7 +30,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const savedTheme = localStorage.getItem('app-theme') as Theme | null;
     if (savedTheme) {
-      setThemeState(savedTheme);
+      setTimeout(() => setThemeState(savedTheme), 0);
       applyTheme(savedTheme);
     } else {
       applyTheme('auto');

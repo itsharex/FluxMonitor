@@ -148,7 +148,7 @@ export async function GET() {
       }
     }
 
-    let memory = { freeMB: 0, usedMB: 0, totalMB: staticCache.totalMB };
+    const memory = { freeMB: 0, usedMB: 0, totalMB: staticCache.totalMB };
     if (vmStatResult.status === 'fulfilled' && pageSizeResult.status === 'fulfilled') {
       const pageSize = parseInt(pageSizeResult.value.stdout.trim());
       const vmStatLines = vmStatResult.value.stdout.split('\n');

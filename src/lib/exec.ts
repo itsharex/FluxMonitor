@@ -38,7 +38,7 @@ export const EXEC_ENV = {
   PATH: `${COMMON_PATH}:${process.env.PATH || ''}`
 };
 
-export async function execAsync(command: string, options: Record<string, any> = {}): Promise<{ stdout: string; stderr: string }> {
+export async function execAsync(command: string, options: Record<string, unknown> = {}): Promise<{ stdout: string; stderr: string }> {
   return execAsyncPipe(command, {
     encoding: 'utf8',
     ...options,
@@ -48,8 +48,8 @@ export async function execAsync(command: string, options: Record<string, any> = 
 
 export async function runCommandWithSudo(command: string, password?: string) {
   if (!password) {
-    const error = new Error('SUDO_REQUIRED');
-    (error as any).code = 'SUDO_REQUIRED';
+    const error = new Error('SUDO_REQUIRED') as Error & { code?: string };
+    error.code = 'SUDO_REQUIRED';
     throw error;
   }
 
@@ -65,7 +65,7 @@ export async function writeFileWithSudo(filePath: string, content: string, passw
 
   try {
     await runCommandWithSudo(`mv "${tempPath}" "${filePath}"`, password);
-  } catch (error: any) {
+  } catch (e: unknown) { const error = e as { code?: string; stderr?: string; message?: string };
     if (fs.existsSync(tempPath)) {
       try { await fs.promises.unlink(tempPath); } catch { }
     }

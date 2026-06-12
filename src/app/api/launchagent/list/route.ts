@@ -65,7 +65,7 @@ export async function GET(request: Request) {
     }));
 
     return NextResponse.json({ success: true, data: enrichedPlists });
-  } catch (error: any) {
+  } catch (e: unknown) { const error = e as { code?: string; stderr?: string; message?: string };
     return NextResponse.json({ error: 'FETCH_FAILED', details: error?.message }, { status: 500 });
   }
 }

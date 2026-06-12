@@ -15,7 +15,7 @@ export async function GET(request: Request) {
       success: true,
       logs: stdout || stderr
     });
-  } catch (error: any) {
+  } catch (e: unknown) { const error = e as { code?: string; stderr?: string; message?: string };
     return NextResponse.json({
       error: 'FETCH_LOGS_FAILED',
       details: error?.message || 'UNKNOWN_ERROR',

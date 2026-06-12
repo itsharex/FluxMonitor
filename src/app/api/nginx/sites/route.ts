@@ -1,3 +1,4 @@
+
 import { NextResponse } from 'next/server';
 import fs from 'fs/promises';
 import { existsSync } from 'fs';
@@ -143,11 +144,11 @@ export async function POST(request: Request) {
     if (action === 'write') {
       try {
         await fs.writeFile(filePath, content || '', 'utf-8');
-      } catch (error: any) {
+      } catch (errorRaw: unknown) { const error = errorRaw as { code?: string; message?: string };
         if (error.code === 'EACCES' || error.code === 'EPERM') {
           try {
             await writeFileWithSudo(filePath, content || '', sudoPassword);
-          } catch (sudoErr: any) {
+          } catch (sudoErrRaw: unknown) { const sudoErr = sudoErrRaw as { code?: string; stderr?: string; message?: string };
             if (sudoErr.code === 'SUDO_REQUIRED') {
               return NextResponse.json({ error: 'SUDO_REQUIRED' }, { status: 403 });
             }
@@ -182,7 +183,7 @@ export async function POST(request: Request) {
         if (!existsSync(p)) return;
         try {
           await fs.unlink(p);
-        } catch (error: any) {
+        } catch (errorRaw: unknown) { const error = errorRaw as { code?: string; message?: string };
           if (error.code === 'EACCES' || error.code === 'EPERM') {
             await runCommandWithSudo(`rm "${p}"`, sudoPassword);
           } else {
@@ -200,7 +201,7 @@ export async function POST(request: Request) {
           await deleteFile(enabledFile);
           await deleteFile(enabledFile + '.disabled');
         }
-      } catch (sudoErr: any) {
+      } catch (sudoErrRaw: unknown) { const sudoErr = sudoErrRaw as { code?: string; stderr?: string; message?: string };
         if (sudoErr.code === 'SUDO_REQUIRED') {
           return NextResponse.json({ error: 'SUDO_REQUIRED' }, { status: 403 });
         }
@@ -220,7 +221,7 @@ export async function POST(request: Request) {
           if (!existsSync(enabledFile)) {
             try {
               await fs.symlink(filePath, enabledFile);
-            } catch (error: any) {
+            } catch (errorRaw: unknown) { const error = errorRaw as { code?: string; message?: string };
               if (error.code === 'EACCES' || error.code === 'EPERM') {
                 await runCommandWithSudo(`ln -s "${filePath}" "${enabledFile}"`, sudoPassword);
               } else throw error;
@@ -231,13 +232,13 @@ export async function POST(request: Request) {
           const newPath = path.join(availableDir, newFilename);
           try {
             await fs.rename(filePath, newPath);
-          } catch (error: any) {
+          } catch (errorRaw: unknown) { const error = errorRaw as { code?: string; message?: string };
             if (error.code === 'EACCES' || error.code === 'EPERM') {
               await runCommandWithSudo(`mv "${filePath}" "${newPath}"`, sudoPassword);
             } else throw error;
           }
         }
-      } catch (sudoErr: any) {
+      } catch (sudoErrRaw: unknown) { const sudoErr = sudoErrRaw as { code?: string; stderr?: string; message?: string };
         if (sudoErr.code === 'SUDO_REQUIRED') return NextResponse.json({ error: 'SUDO_REQUIRED' }, { status: 403 });
         if (sudoErr.stderr?.toLowerCase().includes('password')) return NextResponse.json({ error: 'SUDO_PASSWORD_INCORRECT' }, { status: 403 });
         throw sudoErr;
@@ -252,7 +253,7 @@ export async function POST(request: Request) {
           if (existsSync(enabledFile)) {
             try {
               await fs.unlink(enabledFile);
-            } catch (error: any) {
+            } catch (errorRaw: unknown) { const error = errorRaw as { code?: string; message?: string };
               if (error.code === 'EACCES' || error.code === 'EPERM') {
                 await runCommandWithSudo(`rm "${enabledFile}"`, sudoPassword);
               } else throw error;
@@ -262,13 +263,13 @@ export async function POST(request: Request) {
           const newPath = filePath + '.disabled';
           try {
             await fs.rename(filePath, newPath);
-          } catch (error: any) {
+          } catch (errorRaw: unknown) { const error = errorRaw as { code?: string; message?: string };
             if (error.code === 'EACCES' || error.code === 'EPERM') {
               await runCommandWithSudo(`mv "${filePath}" "${newPath}"`, sudoPassword);
             } else throw error;
           }
         }
-      } catch (sudoErr: any) {
+      } catch (sudoErrRaw: unknown) { const sudoErr = sudoErrRaw as { code?: string; stderr?: string; message?: string };
         if (sudoErr.code === 'SUDO_REQUIRED') return NextResponse.json({ error: 'SUDO_REQUIRED' }, { status: 403 });
         if (sudoErr.stderr?.toLowerCase().includes('password')) return NextResponse.json({ error: 'SUDO_PASSWORD_INCORRECT' }, { status: 403 });
         throw sudoErr;

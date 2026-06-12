@@ -86,7 +86,7 @@ export async function POST(request: Request) {
       try {
         const { stdout, stderr } = await executeNginxCmd(`${NGINX_BIN} -t`);
         return NextResponse.json({ success: true, details: stdout || stderr });
-      } catch (err: any) {
+      } catch (e: unknown) { const err = e as { code?: string; stderr?: string; message?: string };
         const errorMsg = err instanceof Error ? err.message : String(err);
         if (errorMsg === 'REQUIRES_SUDO_PASSWORD' || errorMsg === 'SUDO_AUTH_FAILED') {
           throw err;
@@ -121,7 +121,7 @@ export async function POST(request: Request) {
         }
         
         return NextResponse.json({ success: true, logs: logs || '' });
-      } catch (err: any) {
+      } catch (e: unknown) { const err = e as { code?: string; stderr?: string; message?: string };
         const errorMsg = err instanceof Error ? err.message : String(err);
         if (errorMsg === 'REQUIRES_SUDO_PASSWORD' || errorMsg === 'SUDO_AUTH_FAILED') {
           throw err;

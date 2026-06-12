@@ -25,7 +25,7 @@ export async function POST() {
       success: true,
       data: `data:image/png;base64,${base64Image}`
     });
-  } catch (error: any) {
+  } catch (e: unknown) { const error = e as { code?: string; stderr?: string; message?: string };
     console.error('Screenshot error:', error);
     return NextResponse.json({
       success: false,

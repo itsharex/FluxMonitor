@@ -130,7 +130,8 @@ export async function streamAiContent(
 
     onChunk(fullText);
     onDone?.();
-  } catch (e: any) {
+  } catch (errRaw: unknown) {
+    const e = errRaw as { name?: string; message?: string };
     if (e.name === 'AbortError') {
       onDone?.();
       return;

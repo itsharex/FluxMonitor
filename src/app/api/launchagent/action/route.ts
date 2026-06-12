@@ -22,7 +22,7 @@ export async function POST(request: Request) {
     if (action === 'write') {
       try {
         await fs.writeFile(filePath, content, 'utf-8');
-      } catch (error: any) {
+      } catch (e: unknown) { const error = e as { code?: string; stderr?: string; message?: string };
         if (error.code === 'EACCES') {
           await writeFileWithSudo(filePath, content, sudoPassword);
         } else throw error;
@@ -33,7 +33,7 @@ export async function POST(request: Request) {
     if (action === 'load') {
       try {
         await execAsync(`launchctl load -w "${filePath}"`);
-      } catch (error: any) {
+      } catch (e: unknown) { const error = e as { code?: string; stderr?: string; message?: string };
         if (error.stderr?.includes('Permission denied') || error.stderr?.includes('privileged')) {
           await runCommandWithSudo(`launchctl load -w "${filePath}"`, sudoPassword);
         } else throw error;
@@ -44,7 +44,7 @@ export async function POST(request: Request) {
     if (action === 'unload') {
       try {
         await execAsync(`launchctl unload -w "${filePath}"`);
-      } catch (error: any) {
+      } catch (e: unknown) { const error = e as { code?: string; stderr?: string; message?: string };
         if (error.stderr?.includes('Permission denied') || error.stderr?.includes('privileged')) {
           await runCommandWithSudo(`launchctl unload -w "${filePath}"`, sudoPassword);
         } else throw error;
@@ -56,7 +56,7 @@ export async function POST(request: Request) {
       try { await execAsync(`launchctl unload -w "${filePath}"`); } catch (e) { } // ignore unload error if not loaded
       try {
         await execAsync(`launchctl load -w "${filePath}"`);
-      } catch (error: any) {
+      } catch (e: unknown) { const error = e as { code?: string; stderr?: string; message?: string };
         if (error.stderr?.includes('Permission denied') || error.stderr?.includes('privileged')) {
           await runCommandWithSudo(`launchctl load -w "${filePath}"`, sudoPassword);
         } else throw error;
@@ -68,7 +68,7 @@ export async function POST(request: Request) {
       try { await execAsync(`launchctl unload -w "${filePath}"`); } catch (e) { } // ignore unload error
       try {
         await fs.unlink(filePath);
-      } catch (error: any) {
+      } catch (e: unknown) { const error = e as { code?: string; stderr?: string; message?: string };
         if (error.code === 'EACCES' || error.code === 'EPERM') {
           await runCommandWithSudo(`rm -f "${filePath}"`, sudoPassword);
         } else throw error;
@@ -81,7 +81,7 @@ export async function POST(request: Request) {
       try { await execAsync(`launchctl unload -w "${filePath}"`); } catch (e) { }
       try {
         await fs.rename(filePath, newFilePath);
-      } catch (error: any) {
+      } catch (e: unknown) { const error = e as { code?: string; stderr?: string; message?: string };
         if (error.code === 'EACCES' || error.code === 'EXDEV' || error.code === 'EPERM') {
           await runCommandWithSudo(`mv "${filePath}" "${newFilePath}"`, sudoPassword);
         } else throw error;
@@ -90,7 +90,7 @@ export async function POST(request: Request) {
     }
 
     return NextResponse.json({ error: 'INVALID_ACTION' }, { status: 400 });
-  } catch (error: any) {
+  } catch (e: unknown) { const error = e as { code?: string; stderr?: string; message?: string };
     if (error.code === 'SUDO_REQUIRED') {
       return NextResponse.json({ error: 'SUDO_REQUIRED' }, { status: 403 });
     }

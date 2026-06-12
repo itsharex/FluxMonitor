@@ -40,7 +40,7 @@ export async function GET(request: Request) {
     // Use tail to get the last N lines
     const { stdout } = await execAsync(`tail -n ${lines} ${logFile}`);
     return NextResponse.json({ success: true, logs: stdout });
-  } catch (err: any) {
+  } catch (e: unknown) { const err = e as { code?: string; stderr?: string; message?: string };
     const errorMsg = err?.message || '';
     let errorCode = 'logFetchFailed';
 

@@ -156,7 +156,7 @@ export default function LogsPage() {
           setAnalysisResult(`${t.common.errors.aiConfigMissing}: ${t.common.errors.aiConfigMissingDetail}`);
         } else {
           try {
-            const errorMsg = (t.common.errors as any)[err] || err;
+            const errorMsg = (t.common.errors as Record<string, string>)[err as string] || err;
             setAnalysisResult(errorMsg);
           } catch {
             setAnalysisResult(err);

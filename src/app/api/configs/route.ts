@@ -204,7 +204,7 @@ export async function GET() {
       }
     }));
     return NextResponse.json({ success: true, data: availableConfigs, home: HOME });
-  } catch (error: any) {
+  } catch (e: unknown) { const error = e as { code?: string; stderr?: string; message?: string };
     return NextResponse.json({ error: 'FETCH_FAILED', details: error.message }, { status: 500 });
   }
 }
@@ -255,7 +255,7 @@ export async function POST(request: Request) {
       try {
         const data = await fs.readFile(configPath, 'utf-8');
         return NextResponse.json({ success: true, content: data });
-      } catch (error: any) {
+      } catch (e: unknown) { const error = e as { code?: string; stderr?: string; message?: string };
         return NextResponse.json({ error: 'READ_FAILED', details: error.message }, { status: 500 });
       }
     }
@@ -264,13 +264,13 @@ export async function POST(request: Request) {
       try {
         await fs.writeFile(configPath, content || '', 'utf-8');
         return NextResponse.json({ success: true });
-      } catch (error: any) {
+      } catch (e: unknown) { const error = e as { code?: string; stderr?: string; message?: string };
         if (error.code === 'EACCES' || error.code === 'EPERM') {
           if (sudoPassword) {
             try {
               await writeFileWithSudo(configPath, content || '', sudoPassword);
               return NextResponse.json({ success: true });
-            } catch (sudoError: any) {
+            } catch (sudoErrorRaw: unknown) { const sudoError = sudoErrorRaw as { code?: string; stderr?: string; message?: string };
               if (sudoError.stderr?.toLowerCase().includes('password')) {
                 return NextResponse.json({ error: 'SUDO_PASSWORD_INCORRECT' }, { status: 403 });
               }
@@ -302,7 +302,7 @@ export async function POST(request: Request) {
     }
 
     return NextResponse.json({ error: 'UNKNOWN_ACTION' }, { status: 400 });
-  } catch (error: any) {
+  } catch (e: unknown) { const error = e as { code?: string; stderr?: string; message?: string };
     return NextResponse.json({ error: 'ACTION_FAILED', details: error.message }, { status: 500 });
   }
 }

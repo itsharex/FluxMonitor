@@ -6,7 +6,7 @@ export type PlistNodeType = 'string' | 'integer' | 'real' | 'boolean' | 'array' 
 
 export interface PlistNode {
   type: PlistNodeType;
-  value: any;
+  value: unknown;
 }
 
 export function parsePlistXml(xml: string): PlistNode {
@@ -118,7 +118,7 @@ export function createFullPlistXml(node: PlistNode) {
 
 const typeOptions: PlistNodeType[] = ['string', 'integer', 'real', 'boolean', 'array', 'dict'];
 
-function getDefaultValueForType(type: PlistNodeType): any {
+function getDefaultValueForType(type: PlistNodeType): unknown {
   switch(type) {
     case 'string': return '';
     case 'integer': return 0;
@@ -133,6 +133,7 @@ interface NodeEditorProps {
   node: PlistNode;
   onChange: (newNode: PlistNode) => void;
   isRoot?: boolean;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   t: any;
 }
 
@@ -256,7 +257,7 @@ const NodeEditor: React.FC<NodeEditorProps> = ({ node, onChange, isRoot, t }) =>
                     className="input" 
                     type={item.node.type === 'string' ? 'text' : 'number'}
                     style={{ width: '100%', padding: '0.4rem', fontSize: '0.85rem' }}
-                    value={item.node.value}
+                    value={item.node.value as string | number}
                     onChange={e => {
                       const newList = [...list];
                       const val = item.node.type === 'string' ? e.target.value : Number(e.target.value);
@@ -340,7 +341,7 @@ const NodeEditor: React.FC<NodeEditorProps> = ({ node, onChange, isRoot, t }) =>
                     className="input" 
                     type={itemNode.type === 'string' ? 'text' : 'number'}
                     style={{ width: '100%', padding: '0.4rem', fontSize: '0.85rem' }}
-                    value={itemNode.value}
+                    value={itemNode.value as string | number}
                     onChange={e => {
                       const newList = [...list];
                       const val = itemNode.type === 'string' ? e.target.value : Number(e.target.value);
@@ -425,12 +426,16 @@ export const PlistVisualEditor: React.FC<PlistVisualEditorProps> = ({ xml, onCha
 
     try {
       const parsed = parsePlistXml(xml);
-      setRootNode(parsed);
-      setError(null);
+      setTimeout(() => {
+        setRootNode(parsed);
+        setError(null);
+      }, 0);
       lastEmittedXml.current = xml;
-    } catch (err: any) {
-      setError(err.message || 'Failed to parse XML');
-      setRootNode(null);
+    } catch (e: unknown) { const err = e as { message?: string };
+      setTimeout(() => {
+        setError(err.message || 'Failed to parse XML');
+        setRootNode(null);
+      }, 0);
     }
   }, [xml, t.common.loading]);
 

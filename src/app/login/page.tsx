@@ -58,7 +58,7 @@ export default function LoginPage() {
         }
         setError(errorMsg);
       }
-    } catch {
+    } catch (e: unknown) {
       setError(t.login.networkError);
     } finally {
       setLoading(false);
@@ -73,7 +73,7 @@ export default function LoginPage() {
             <Globe size={18} style={{ color: 'var(--color-text-muted)' }} />
             <select
               value={language}
-              onChange={(e) => setLanguage(e.target.value as any)}
+              onChange={(e) => setLanguage(e.target.value as Parameters<typeof setLanguage>[0])}
               className="input"
               style={{ padding: '0.3rem 1.5rem 0.3rem 0.6rem', fontSize: '0.85rem', height: 'auto', background: 'var(--color-surface-bg)', backdropFilter: 'blur(16px)', border: '1px solid var(--color-surface-border)', cursor: 'pointer' }}
             >
