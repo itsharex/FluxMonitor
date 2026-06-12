@@ -279,11 +279,15 @@ export default function GlobalTerminal() {
     setAiLoading(true);
     setCmdResult(`${t.common.analyzing}...`);
     
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
+    
     streamAiContent(
       {
         prompt: t.monitor.aiTranslatePrompt.replace('{demand}', cmd),
         systemPrompt: 'You are an expert command line translator. Provide only the translated shell command without any markdown formatting, explanation, or conversational text.',
-        config: config?.ai
+        config: config?.ai,
+        signal: controller.signal
       },
       (chunk) => {
         setCmd(chunk);
@@ -317,13 +321,17 @@ export default function GlobalTerminal() {
     setIsAnalyzing(true);
     setAnalysisResult(`${t.common.analyzing}... 🪄`);
     
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
+    
     streamAiContent(
       {
         prompt: t.monitor.aiAnalyzeOutputPrompt
           .replace('{lang}', t.common.aiResponseLang)
           .replace('{output}', cmdResult.length > 30000 ? `... [TRUNCATED] ...\n${cmdResult.slice(-30000)}` : cmdResult),
         systemPrompt: 'You are an expert system administrator.',
-        config: config?.ai
+        config: config?.ai,
+        signal: controller.signal
       },
       (chunk) => {
         setAnalysisResult(chunk);
@@ -694,7 +702,11 @@ export default function GlobalTerminal() {
                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', padding: '0.6rem 1rem', color: 'var(--color-primary)', background: 'rgba(239, 246, 255, 0.8)', borderBottom: '1px solid rgba(59, 130, 246, 0.08)' }}>
                   <Brain size={18} /> <span style={{ fontSize: '0.85rem', fontWeight: 700 }}>{t.monitor.aiAdvice}</span>
                   {isAnalyzing && <span className="text-xs animate-pulse opacity-60 ml-2" style={{ fontStyle: 'italic' }}>{t.common.analyzing}...</span>}
-                  <button onClick={() => { setAnalysisResult(''); setIsAnalyzing(false); }} style={{ marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-primary)' }}>
+                  <button onClick={() => {
+                    abortControllerRef.current?.abort();
+                    setAnalysisResult('');
+                    setIsAnalyzing(false);
+                  }} style={{ marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-primary)' }}>
                     <X size={16} />
                   </button>
                 </div>

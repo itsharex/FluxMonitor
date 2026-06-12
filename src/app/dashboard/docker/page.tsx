@@ -57,6 +57,7 @@ export default function DockerDashboard() {
   const [diagnosisId, setDiagnosisId] = useState<string | null>(null);
   const [isExecModalOpen, setIsExecModalOpen] = useState(false);
   const [execCmd, setExecCmd] = useState('');
+  const abortControllerRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
     if (logRef.current) {
@@ -85,11 +86,13 @@ export default function DockerDashboard() {
   }, [isLogsOpen, diagnosisId, t.docker.noLogs]);
 
   useEffect(() => {
+    abortControllerRef.current?.abort();
     setAnalysisResult('');
     setDiagnosisId(null);
   }, [activeTab]);
 
   useEffect(() => {
+    abortControllerRef.current?.abort();
     setAnalysisResult('');
   }, [isLogsOpen]);
 
@@ -191,10 +194,12 @@ export default function DockerDashboard() {
 
     setIsAiAnalyzing(true);
     setAnalysisResult(t.docker.aiAnalyzingStatus);
-    setDiagnosisId(id);
     setIsAiAnalyzing(true);
     setAnalysisResult(t.docker.aiAnalyzingStatus);
     setDiagnosisId(id);
+    
+    abortControllerRef.current?.abort();
+    abortControllerRef.current = new AbortController();
     
     streamAiContent(
       {
@@ -204,7 +209,8 @@ export default function DockerDashboard() {
           .replace('{lang}', t.common.aiResponseLang)
           .replace('{logs}', currentLogs.slice(-4000)),
         systemPrompt: 'You are an expert Docker engineer specializing in container troubleshooting and log analysis.',
-        config: config?.ai
+        config: config?.ai,
+        signal: abortControllerRef.current.signal
       },
       (chunk) => {
         setAnalysisResult(chunk);
@@ -247,6 +253,9 @@ export default function DockerDashboard() {
     setAnalysisResult(`${t.docker.aiAnalyzingStatus} "${container.Names}" ... 🪄`);
     setDiagnosisId(container.ID);
 
+    abortControllerRef.current?.abort();
+    abortControllerRef.current = new AbortController();
+
     streamAiContent(
       {
         prompt: t.docker.aiStatusPrompt
@@ -255,7 +264,8 @@ export default function DockerDashboard() {
           .replace('{image}', container.Image)
           .replace('{lang}', t.common.aiResponseLang),
         systemPrompt: 'You are an expert DevOps engineer specializing in Docker container health and status monitoring.',
-        config: config?.ai
+        config: config?.ai,
+        signal: abortControllerRef.current.signal
       },
       (chunk) => {
         setAnalysisResult(chunk);
@@ -281,11 +291,15 @@ export default function DockerDashboard() {
     setIsAiGenerating(true);
     setGeneratedCmd('');
 
+    abortControllerRef.current?.abort();
+    abortControllerRef.current = new AbortController();
+
     streamAiContent(
       {
         prompt: t.docker.aiGenPrompt.replace('{demand}', aiDemand),
         systemPrompt: 'You are an expert Docker command generator. You provide only the shell command text. Answer ONLY with the generated docker command text, without any introductory or conversational remarks.',
-        config: config?.ai
+        config: config?.ai,
+        signal: abortControllerRef.current.signal
       },
       (chunk) => {
         setGeneratedCmd(chunk);
@@ -321,7 +335,10 @@ export default function DockerDashboard() {
         <div style={{ display: 'flex', gap: '0.5rem' }}>
           <button
             className="btn btn-ghost mobile-full-width"
-            onClick={() => setShowAiInput(!showAiInput)}
+            onClick={() => {
+              abortControllerRef.current?.abort();
+              setShowAiInput(!showAiInput);
+            }}
             style={{ gap: '0.5rem', height: '36px', color: 'var(--color-primary)', border: '1px solid rgba(59, 130, 246, 0.2)' }}
           >
             <Sparkles size={18} /> {t.docker.aiAssistant}
@@ -635,7 +652,11 @@ export default function DockerDashboard() {
                   <Brain size={16} />
                   <span style={{ fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{t.docker.aiContainerDiagnosis}</span>
                   {isAiAnalyzing && <span className="text-xs animate-pulse opacity-60 ml-2" style={{ fontStyle: 'italic' }}>{t.docker.aiAnalyzingStatus}...</span>}
-                  <button onClick={() => setAnalysisResult('')} style={{ marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', fontSize: '1.2rem', color: 'var(--color-text-muted)', lineHeight: 1 }}>&times;</button>
+                  <button onClick={() => {
+                    abortControllerRef.current?.abort();
+                    setAnalysisResult('');
+                    setIsAiAnalyzing(false);
+                  }} style={{ marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', fontSize: '1.2rem', color: 'var(--color-text-muted)', lineHeight: 1 }}>&times;</button>
                 </div>
                 <div style={{ fontSize: '0.85rem', color: 'var(--color-text)', lineHeight: 1.6, padding: '1rem 1.25rem', overflowY: 'auto' }}>
                   <ReactMarkdown remarkPlugins={[remarkGfm]}>{analysisResult || (isAiAnalyzing ? t.docker.aiAnalyzingStatus : '')}</ReactMarkdown>

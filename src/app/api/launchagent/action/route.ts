@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { exec } from 'child_process';
 import { promisify } from 'util';
 import fs from 'fs/promises';
-import { runCommandWithSudo } from '@/lib/exec';
+import { runCommandWithSudo, writeFileWithSudo } from '@/lib/exec';
 
 const execAsync = promisify(exec);
 
@@ -20,7 +20,13 @@ export async function POST(request: Request) {
     }
 
     if (action === 'write') {
-      await fs.writeFile(filePath, content, 'utf-8');
+      try {
+        await fs.writeFile(filePath, content, 'utf-8');
+      } catch (error: any) {
+        if (error.code === 'EACCES') {
+          await writeFileWithSudo(filePath, content, sudoPassword);
+        } else throw error;
+      }
       return NextResponse.json({ success: true });
     }
 
@@ -48,20 +54,38 @@ export async function POST(request: Request) {
 
     if (action === 'reload') {
       try { await execAsync(`launchctl unload -w "${filePath}"`); } catch (e) { } // ignore unload error if not loaded
-      await execAsync(`launchctl load -w "${filePath}"`);
+      try {
+        await execAsync(`launchctl load -w "${filePath}"`);
+      } catch (error: any) {
+        if (error.stderr?.includes('Permission denied') || error.stderr?.includes('privileged')) {
+          await runCommandWithSudo(`launchctl load -w "${filePath}"`, sudoPassword);
+        } else throw error;
+      }
       return NextResponse.json({ success: true });
     }
 
     if (action === 'delete') {
       try { await execAsync(`launchctl unload -w "${filePath}"`); } catch (e) { } // ignore unload error
-      await fs.unlink(filePath);
+      try {
+        await fs.unlink(filePath);
+      } catch (error: any) {
+        if (error.code === 'EACCES' || error.code === 'EPERM') {
+          await runCommandWithSudo(`rm -f "${filePath}"`, sudoPassword);
+        } else throw error;
+      }
       return NextResponse.json({ success: true });
     }
 
     if (action === 'rename') {
       if (!newFilePath) return NextResponse.json({ error: 'MISSING_NEW_PATH' }, { status: 400 });
       try { await execAsync(`launchctl unload -w "${filePath}"`); } catch (e) { }
-      await fs.rename(filePath, newFilePath);
+      try {
+        await fs.rename(filePath, newFilePath);
+      } catch (error: any) {
+        if (error.code === 'EACCES' || error.code === 'EXDEV' || error.code === 'EPERM') {
+          await runCommandWithSudo(`mv "${filePath}" "${newFilePath}"`, sudoPassword);
+        } else throw error;
+      }
       return NextResponse.json({ success: true });
     }
 

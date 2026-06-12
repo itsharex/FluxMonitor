@@ -1,7 +1,7 @@
 import { AIConfig } from "./types";
 
 export async function streamAiContent(
-  payload: { prompt: string; systemPrompt?: string; config?: Partial<AIConfig> },
+  payload: { prompt: string; systemPrompt?: string; config?: Partial<AIConfig>; signal?: AbortSignal },
   onChunk: (chunk: string) => void,
   onDone?: () => void,
   onError?: (error: string) => void
@@ -22,6 +22,7 @@ export async function streamAiContent(
 
     const res = await fetch(apiUrl, {
       method: 'POST',
+      signal: payload.signal,
       headers: {
         'Content-Type': 'application/json',
         'Accept': 'text/event-stream',
@@ -130,6 +131,10 @@ export async function streamAiContent(
     onChunk(fullText);
     onDone?.();
   } catch (e: any) {
+    if (e.name === 'AbortError') {
+      onDone?.();
+      return;
+    }
     onError?.(e.message || 'Stream fetch failed');
   }
 }

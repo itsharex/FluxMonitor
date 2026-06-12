@@ -5,7 +5,7 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { streamAiContent } from '@/lib/aiStream';
 
-import { useEffect, useState, useMemo, useCallback } from 'react';
+import { useEffect, useState, useMemo, useCallback, useRef } from 'react';
 import { useLanguage } from '@/lib/LanguageContext';
 import { useSettings } from '@/lib/SettingsContext';
 import {
@@ -51,6 +51,7 @@ export default function ProcessManager() {
   const [loadingDetail, setLoadingDetail] = useState(false);
   const [aiAnalysis, setAiAnalysis] = useState<string | null>(null);
   const [analyzing, setAnalyzing] = useState(false);
+  const abortControllerRef = useRef<AbortController | null>(null);
 
   const fetchProcesses = useCallback(async () => {
     setLoading(true);
@@ -93,6 +94,9 @@ export default function ProcessManager() {
     setAnalyzing(true);
     setAiAnalysis(null);
 
+    abortControllerRef.current?.abort();
+    abortControllerRef.current = new AbortController();
+
     const promptText = t.processes.aiPrompt
         .replace('{pid}', processDetail.pid)
         .replace('{ppid}', processDetail.ppid)
@@ -111,7 +115,8 @@ export default function ProcessManager() {
       {
         prompt: promptText,
         systemPrompt: "You are a macOS system expert. Analyze the provided process information and provide a helpful diagnosis.",
-        config: config?.ai
+        config: config?.ai,
+        signal: abortControllerRef.current.signal
       },
       (chunk) => {
         setAiAnalysis(chunk);
@@ -404,7 +409,10 @@ export default function ProcessManager() {
 
       {/* Detail Modal */}
       {selectedPid && (
-        <div className="modal-overlay" onClick={() => setSelectedPid(null)}>
+        <div className="modal-overlay" onClick={() => {
+          abortControllerRef.current?.abort();
+          setSelectedPid(null);
+        }}>
           <div className="modal-content" onClick={e => e.stopPropagation()} style={{ maxWidth: '700px', width: '90%', maxHeight: '85vh', display: 'flex', flexDirection: 'column', padding: 0, overflow: 'hidden' }}>
             {/* Modal Header */}
             <div className="flex-between" style={{ padding: '1.5rem 2rem', borderBottom: '1px solid var(--color-surface-border)' }}>
@@ -429,7 +437,10 @@ export default function ProcessManager() {
                   </button>
                 )
                 }
-                <button className="btn btn-ghost" onClick={() => setSelectedPid(null)} style={{ padding: '0.5rem' }}>
+                <button className="btn btn-ghost" onClick={() => {
+                  abortControllerRef.current?.abort();
+                  setSelectedPid(null);
+                }} style={{ padding: '0.5rem' }}>
                   <XOctagon size={20} />
                 </button>
               </div>

@@ -6,12 +6,21 @@ import path from 'path';
 
 const execAsync = promisify(exec);
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
-    const homeDir = process.env.HOME || '/Users/chentao';
-    const agentsDir = path.join(homeDir, 'Library', 'LaunchAgents');
+    const url = new URL(request.url);
+    const type = url.searchParams.get('type') || 'agent';
 
-    // Fallback if no user dir exists
+    const homeDir = process.env.HOME || '/Users/chentao';
+    let agentsDir = '';
+
+    if (type === 'daemon') {
+      agentsDir = '/Library/LaunchDaemons';
+    } else {
+      agentsDir = path.join(homeDir, 'Library', 'LaunchAgents');
+    }
+
+    // Fallback if no dir exists
     if (!await fs.stat(agentsDir).catch(() => false)) {
       return NextResponse.json({ success: true, data: [] });
     }
@@ -29,7 +38,15 @@ export async function GET() {
     }));
 
     // Get loaded services
-    const { stdout } = await execAsync('launchctl list', { maxBuffer: 100 * 1024 * 1024 });
+    // Note: launchctl list run by standard user may only show user's agents.
+    // For system daemons, we still try standard launchctl list, but it might not list them.
+    let stdout = '';
+    try {
+      const result = await execAsync('launchctl list', { maxBuffer: 100 * 1024 * 1024 });
+      stdout = result.stdout;
+    } catch {
+      // ignore
+    }
     const loadedList = stdout.split('\n');
 
     const enrichedPlists = await Promise.all(plists.map(async p => {

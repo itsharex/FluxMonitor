@@ -53,6 +53,7 @@ export default function ConfigsDashboard() {
   const [analysisResult, setAnalysisResult] = useState('');
   const [showAiPanel, setShowAiPanel] = useState(false);
   // aiCacheRef removed as unused
+  const abortControllerRef = useRef<AbortController | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [homePath, setHomePath] = useState('');
   const [activeCategory, setActiveCategory] = useState<string>('all');
@@ -170,6 +171,9 @@ export default function ConfigsDashboard() {
     setIsAiAnalyzing(true);
     setShowAiPanel(true);
     setAnalysisResult('');
+    
+    abortControllerRef.current?.abort();
+    abortControllerRef.current = new AbortController();
 
     streamAiContent(
       { 
@@ -177,7 +181,8 @@ export default function ConfigsDashboard() {
           .replace('{name}', config.name)
           .replace('{lang}', t.common.aiResponseLang)
           .replace('{content}', content.length > 30000 ? `... [TRUNCATED] ...\n${content.slice(-30000)}` : content),
-        config: settingsConfig?.ai
+        config: settingsConfig?.ai,
+        signal: abortControllerRef.current.signal
       },
       (chunk) => {
         setAnalysisResult(chunk);
@@ -415,7 +420,12 @@ export default function ConfigsDashboard() {
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.75rem 1rem', background: 'var(--color-surface-bg)', backdropFilter: 'blur(10px)', position: 'sticky', top: 0, zIndex: 1 }}>
                     <Brain size={16} color="var(--color-primary)" />
                     <span style={{ fontSize: '0.85rem', fontWeight: 700 }}>{t.configs.aiAnalyzeTitle}</span>
-                    <button style={{ marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer' }} onClick={() => setShowAiPanel(false)}><X size={16} color="var(--color-text-muted)" /></button>
+                    <button style={{ marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer' }} onClick={() => {
+                      abortControllerRef.current?.abort();
+                      setShowAiPanel(false);
+                      setIsAiAnalyzing(false);
+                      setAnalysisResult('');
+                    }}><X size={16} color="var(--color-text-muted)" /></button>
                   </div>
 
                   <div style={{ flex: 1, overflowY: 'auto', padding: '1rem' }}>

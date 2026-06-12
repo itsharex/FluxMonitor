@@ -16,6 +16,7 @@ export default function DashboardOverview() {
     const [aiAnalysis, setAiAnalysis] = useState<string | null>(null);
     const [aiAnalyzing, setAiAnalyzing] = useState(false);
     const aiCacheRef = useRef<{ [k: string]: string }>({});
+    const abortControllerRef = useRef<AbortController | null>(null);
 
     // 组装系统健康分析 prompt
     const buildSystemHealthPrompt = () => {
@@ -56,13 +57,17 @@ export default function DashboardOverview() {
       setAiAnalysis(null);
       setAiAnalysis(`${t.common.analyzing}...`);
       
+      abortControllerRef.current?.abort();
+      abortControllerRef.current = new AbortController();
+
       streamAiContent(
         {
           prompt: t.monitor.aiHealthPrompt
             .replace('{lang}', t.common.aiResponseLang)
             .replace('{stats}', statsText),
           systemPrompt: 'You are a senior macOS/Linux system expert specializing in health diagnostics, performance analysis, and risk assessment. Provide professional, concise, and practical advice.',
-          config: settingsConfig?.ai
+          config: settingsConfig?.ai,
+          signal: abortControllerRef.current.signal
         },
         (chunk) => {
           setAiAnalysis(chunk);
@@ -343,7 +348,11 @@ export default function DashboardOverview() {
               {aiAnalyzing && <span className="text-xs text-[var(--color-text-muted)] animate-pulse ml-2" style={{ fontStyle: 'italic' }}>{t.common.analyzing || ''}...</span>}
             </div>
             {aiAnalyzing && <RefreshCw size={16} className="animate-spin" color="var(--color-primary)" />}
-            <button style={{ marginLeft: '1rem', background: 'none', border: 'none', cursor: 'pointer' }} onClick={() => setAiAnalysis(null)}><X size={16} /></button>
+            <button style={{ marginLeft: '1rem', background: 'none', border: 'none', cursor: 'pointer' }} onClick={() => {
+              abortControllerRef.current?.abort();
+              setAiAnalysis(null);
+              setAiAnalyzing(false);
+            }}><X size={16} /></button>
           </div>
           
           <div className="ai-output-block no-scrollbar markdown-body" style={{ fontSize: '0.95rem', color: 'var(--color-text)', lineHeight: 1.7, maxHeight: '400px', overflowY: 'auto' }}>

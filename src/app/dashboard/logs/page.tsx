@@ -40,6 +40,7 @@ export default function LogsPage() {
   const [readLoading, setReadLoading] = useState(false);
   const [analysisResult, setAnalysisResult] = useState('');
   const [isExplaining, setIsExplaining] = useState(false);
+  const abortControllerRef = useRef<AbortController | null>(null);
   const [activeCategory, setActiveCategory] = useState<string>('all');
   const [actionLoadingPath, setActionLoadingPath] = useState<string | null>(null);
   const [confirmModal, setConfirmModal] = useState<{ isOpen: boolean; filePath: string; action: ActionType } | null>(null);
@@ -133,12 +134,16 @@ export default function LogsPage() {
     setIsExplaining(true);
     setAnalysisResult(`${t.common.analyzing}...`);
     
+    abortControllerRef.current?.abort();
+    abortControllerRef.current = new AbortController();
+    
     streamAiContent(
       {
         prompt: t.logs.explainPrompt
           .replace('{lang}', t.common.aiResponseLang)
           .replace('{content}', content.length > 30000 ? `... [TRUNCATED] ...\n${content.slice(-30000)}` : content),
-        config: config?.ai
+        config: config?.ai,
+        signal: abortControllerRef.current.signal
       },
       (chunk) => {
         setAnalysisResult(chunk);
@@ -516,7 +521,11 @@ export default function LogsPage() {
                     <Brain size={16} color="var(--color-primary)" />
                     <span style={{ fontSize: '0.85rem', fontWeight: 700 }}>AI {t.logs.analyzeTitle}</span>
                     {isExplaining && <span className="text-xs animate-pulse opacity-60 ml-2" style={{ fontStyle: 'italic' }}>{t.logs.aiProcess || ''}...</span>}
-                    <button style={{ marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer' }} onClick={() => { setAnalysisResult(''); setIsExplaining(false); }}><X size={14} /></button>
+                    <button style={{ marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer' }} onClick={() => { 
+                      abortControllerRef.current?.abort();
+                      setAnalysisResult(''); 
+                      setIsExplaining(false); 
+                    }}><X size={14} /></button>
                   </div>
                   <div style={{ flex: 1, overflowY: 'auto', padding: '1rem', fontSize: '0.85rem', lineHeight: 1.6 }}>
                     <ReactMarkdown remarkPlugins={[remarkGfm]}>{analysisResult || (isExplaining ? t.logs.aiProcess : '...')}</ReactMarkdown>

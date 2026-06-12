@@ -60,6 +60,7 @@ export default function NginxDashboard() {
   const [aiDemand, setAiDemand] = useState('');
   const [showAiPanel, setShowAiPanel] = useState(false);
   const aiCacheRef = useRef<Record<string, string>>({});
+  const abortControllerRef = useRef<AbortController | null>(null);
 
   const refreshInterval = 5000;
   const scrollLogsToBottom = useCallback(() => {
@@ -137,6 +138,7 @@ export default function NginxDashboard() {
   }, [fetchLogs, refreshInterval]);
 
   useEffect(() => {
+    abortControllerRef.current?.abort();
     setAnalysisResult('');
     setAiDemand('');
     setShowAiPanel(false);
@@ -219,6 +221,9 @@ export default function NginxDashboard() {
     setIsLogAnalyzing(true);
     setLogAnalysisResult(`${t.common.analyzing}...`);
     
+    abortControllerRef.current?.abort();
+    abortControllerRef.current = new AbortController();
+
     streamAiContent(
       {
         prompt: t.nginx.aiLogPrompt
@@ -226,7 +231,8 @@ export default function NginxDashboard() {
           .replace('{lang}', t.common.aiResponseLang)
           .replace('{logs}', nginxLogs.length > 30000 ? `... [TRUNCATED] ...\n${nginxLogs.slice(-30000)}` : nginxLogs),
         systemPrompt: 'You are an expert Nginx administrator specializing in system observation and troubleshooting.',
-        config: settingsConfig?.ai
+        config: settingsConfig?.ai,
+        signal: abortControllerRef.current.signal
       },
       (chunk) => {
         setLogAnalysisResult(chunk);
@@ -257,13 +263,17 @@ export default function NginxDashboard() {
 
     setAnalysisResult(`${t.common.analyzing}...`);
     
+    abortControllerRef.current?.abort();
+    abortControllerRef.current = new AbortController();
+
     streamAiContent(
       {
         prompt: t.nginx.aiErrorPrompt
           .replace('{errorLog}', errorLog.length > 20000 ? `... [TRUNCATED] ...\n${errorLog.slice(-20000)}` : errorLog)
           .replace('{lang}', t.common.aiResponseLang),
         systemPrompt: 'You are an expert Nginx administrator and software engineer specializing in Nginx configuration and troubleshooting.',
-        config: settingsConfig?.ai
+        config: settingsConfig?.ai,
+        signal: abortControllerRef.current.signal
       },
       (chunk) => {
         setAnalysisResult(chunk);
@@ -297,6 +307,9 @@ export default function NginxDashboard() {
     setIsAiAnalyzing(true);
     setAnalysisResult(`${t.common.analyzing}...`);
     
+    abortControllerRef.current?.abort();
+    abortControllerRef.current = new AbortController();
+
     streamAiContent(
       {
         prompt: t.nginx.aiAuditPrompt
@@ -304,7 +317,8 @@ export default function NginxDashboard() {
           .replace('{lang}', t.common.aiResponseLang)
           .replace('{content}', siteContent.length > 30000 ? `... [TRUNCATED] ...\n${siteContent.slice(-30000)}` : siteContent),
         systemPrompt: 'You are an expert Nginx administrator specializing in security auditing and performance tuning.',
-        config: settingsConfig?.ai
+        config: settingsConfig?.ai,
+        signal: abortControllerRef.current.signal
       },
       (chunk) => {
         setAnalysisResult(chunk);
@@ -329,6 +343,9 @@ export default function NginxDashboard() {
 
     setIsAiEditing(true);
 
+    abortControllerRef.current?.abort();
+    abortControllerRef.current = new AbortController();
+
     streamAiContent(
       {
         prompt: t.nginx.aiEditPrompt
@@ -336,7 +353,8 @@ export default function NginxDashboard() {
           .replace('{lang}', t.common.aiResponseLang)
           .replace('{demand}', aiDemand),
         systemPrompt: 'You are an expert Nginx configuration generator. You follow instructions precisely and output only the configuration text. Answer ONLY with the generated configuration text, without any introductory or conversational remarks.',
-        config: settingsConfig?.ai
+        config: settingsConfig?.ai,
+        signal: abortControllerRef.current.signal
       },
       (chunk) => {
         // We replace entirely on first chunk to clear old
@@ -702,7 +720,11 @@ export default function NginxDashboard() {
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.5rem', color: 'var(--color-success)', fontWeight: 600, fontSize: '0.75rem' }}>
                   <Brain size={14} /> {t.nginx.logAnalysisResult}
                   {isLogAnalyzing && <span className="text-xs animate-pulse opacity-60 ml-2" style={{ fontStyle: 'italic' }}>{t.nginx.aiAnalyzingLogs || ''}...</span>}
-                  <button onClick={() => { setLogAnalysisResult(''); setIsLogAnalyzing(false); }} style={{ marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-text-muted)' }}>&times;</button>
+                  <button onClick={() => { 
+                    abortControllerRef.current?.abort();
+                    setLogAnalysisResult(''); 
+                    setIsLogAnalyzing(false); 
+                  }} style={{ marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-text-muted)' }}>&times;</button>
                 </div>
                 <div style={{ fontSize: '0.75rem', lineHeight: 1.5 }}>
                   <ReactMarkdown remarkPlugins={[remarkGfm]}>{logAnalysisResult || (isLogAnalyzing ? t.common.analyzing : '...')}</ReactMarkdown>
@@ -856,7 +878,11 @@ export default function NginxDashboard() {
                   style={{ fontSize: '0.85rem', minHeight: '80px', resize: 'vertical' }}
                 />
                 <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
-                  <button className="btn btn-ghost btn-sm" onClick={() => setShowAiPanel(false)}>{t.common.cancel}</button>
+                  <button className="btn btn-ghost btn-sm" onClick={() => {
+                    abortControllerRef.current?.abort();
+                    setShowAiPanel(false);
+                    setIsAiEditing(false);
+                  }}>{t.common.cancel}</button>
                   <button className="btn btn-primary btn-sm" onClick={handleAiEdit} disabled={!aiDemand.trim() || isAiEditing}>
                     {isAiEditing ? t.nginx.aiApplyRunning : t.nginx.aiApply}
                   </button>
@@ -893,7 +919,11 @@ export default function NginxDashboard() {
                   <Brain size={16} />
                   <span style={{ fontSize: '0.8rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>AI Nginx Config Audit</span>
                   {isAiAnalyzing && <span className="text-xs animate-pulse opacity-60 ml-2" style={{ fontStyle: 'italic' }}>{t.common.analyzing}...</span>}
-                  <button onClick={() => setAnalysisResult('')} style={{ marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', fontSize: '1.2rem', color: 'var(--color-text-muted)', lineHeight: 1 }}>&times;</button>
+                  <button onClick={() => {
+                    abortControllerRef.current?.abort();
+                    setAnalysisResult('');
+                    setIsAiAnalyzing(false);
+                  }} style={{ marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', fontSize: '1.2rem', color: 'var(--color-text-muted)', lineHeight: 1 }}>&times;</button>
                 </div>
                 <div style={{ fontSize: '0.9rem', color: 'var(--color-text)', lineHeight: 1.7, padding: '1.25rem', overflowY: 'auto' }}>
                   <ReactMarkdown remarkPlugins={[remarkGfm]}>{analysisResult || (isAiAnalyzing ? t.common.analyzing : '...')}</ReactMarkdown>

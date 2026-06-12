@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState, useRef } from 'react';
 import { useLanguage } from '@/lib/LanguageContext';
 import { useSettings } from '@/lib/SettingsContext';
 import { streamAiContent } from '@/lib/aiStream';
@@ -60,6 +60,7 @@ export default function PortsPage() {
   const [aiAnalysis, setAiAnalysis] = useState('');
   const [analyzing, setAnalyzing] = useState(false);
   const [processTooltip, setProcessTooltip] = useState<{ content: string; x: number; y: number } | null>(null);
+  const abortControllerRef = useRef<AbortController | null>(null);
 
   const fetchPorts = useCallback(async (silent = false) => {
     if (silent) {
@@ -151,6 +152,9 @@ export default function PortsPage() {
   const handleAiAnalyze = () => {
     setAnalyzing(true);
     setAiAnalysis('');
+    
+    abortControllerRef.current?.abort();
+    abortControllerRef.current = new AbortController();
 
     const snapshot = filteredGroups.map(group => ({
       pid: group.pid,
@@ -172,6 +176,7 @@ export default function PortsPage() {
         prompt: promptText,
         systemPrompt: 'You are a macOS system and network operations expert. Analyze local port usage and give concise, actionable findings.',
         config: config?.ai,
+        signal: abortControllerRef.current.signal,
       },
       (chunk) => setAiAnalysis(chunk),
       () => setAnalyzing(false),
@@ -310,6 +315,7 @@ export default function PortsPage() {
               {analyzing && <RefreshCw size={16} className="animate-spin" color="var(--color-primary)" />}
               <button
                 onClick={() => {
+                  abortControllerRef.current?.abort();
                   setAiAnalysis('');
                   setAnalyzing(false);
                 }}

@@ -41,6 +41,7 @@ export default function LaunchAgentDashboard() {
     return `${m}-${d} ${h}:${i}`;
   };
 
+  const [listType, setListType] = useState<'agent' | 'daemon'>('agent');
   const [plists, setPlists] = useState<PlistItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -63,6 +64,7 @@ export default function LaunchAgentDashboard() {
   const [newContent, setNewContent] = useState('');
   const [newAiDemand, setNewAiDemand] = useState('');
   const [isGeneratingNew, setIsGeneratingNew] = useState(false);
+  const abortControllerRef = useRef<AbortController | null>(null);
 
   const stripPlistResponse = (text: string) => {
     const trimmed = text.trim();
@@ -95,7 +97,7 @@ export default function LaunchAgentDashboard() {
 
   const fetchPlists = useCallback(async () => {
     try {
-      const res = await fetch('/api/launchagent/list');
+      const res = await fetch(`/api/launchagent/list?type=${listType}`);
       const data = await res.json();
       if (data.success) {
         setPlists(data.data);
@@ -107,7 +109,7 @@ export default function LaunchAgentDashboard() {
     } finally {
       setLoading(false);
     }
-  }, [t.common.fetchFailed, t.common.networkError]);
+  }, [listType, t.common.fetchFailed, t.common.networkError]);
 
   useEffect(() => {
     fetchPlists();
@@ -188,12 +190,16 @@ export default function LaunchAgentDashboard() {
 
     setIsGeneratingNew(true);
     setSaveStatus(t.launchagent.aiGenerating);
+    
+    abortControllerRef.current?.abort();
+    abortControllerRef.current = new AbortController();
 
     streamAiContent(
       {
         prompt: t.launchagent.aiPromptNew.replace('{demand}', newAiDemand.trim()),
         systemPrompt: 'You are an expert macOS LaunchAgent plist generator. Return only valid plist XML. Do not include Markdown fences, explanations, or extra text.',
-        config: settingsConfig?.ai
+        config: settingsConfig?.ai,
+        signal: abortControllerRef.current.signal
       },
       (chunk) => {
         const generated = stripPlistResponse(chunk);
@@ -228,7 +234,7 @@ export default function LaunchAgentDashboard() {
       const firstPath = plists[0].path;
       basePath = firstPath.substring(0, firstPath.lastIndexOf('/') + 1);
     } else {
-      basePath = '/Users/chentao/Library/LaunchAgents/';
+      basePath = listType === 'daemon' ? '/Library/LaunchDaemons/' : '/Users/chentao/Library/LaunchAgents/';
     }
     const newPath = basePath + name;
 
@@ -388,13 +394,17 @@ export default function LaunchAgentDashboard() {
     setIsAiAnalyzing(true);
     setAnalysisResult(`${t.common.analyzing}...`);
     
+    abortControllerRef.current?.abort();
+    abortControllerRef.current = new AbortController();
+    
     streamAiContent(
       {
         prompt: t.launchagent.aiExplainPrompt
           .replace('{lang}', t.common.aiResponseLang)
           .replace('{content}', fileContent.length > 20000 ? `... [TRUNCATED] ...\n${fileContent.slice(-20000)}` : fileContent),
         systemPrompt: 'You are an expert system administrator Specialized in macOS Launch Agents and background processes.',
-        config: settingsConfig?.ai
+        config: settingsConfig?.ai,
+        signal: abortControllerRef.current.signal
       },
       (chunk) => {
         setAnalysisResult(chunk);
@@ -423,6 +433,23 @@ export default function LaunchAgentDashboard() {
             <Rocket size={24} color="var(--color-primary)" />
           </div>
           <h1 className="card-title" style={{ fontSize: '1.5rem', margin: 0 }}>{t.sidebar.launchagent}</h1>
+          
+          <div style={{ display: 'flex', background: 'var(--color-surface-bg)', padding: '0.2rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--color-surface-border)', marginLeft: '1rem' }}>
+            <button 
+              className={`btn ${listType === 'agent' ? 'btn-primary' : 'btn-ghost'}`} 
+              style={{ padding: '0.4rem 0.8rem', fontSize: '0.85rem', height: 'auto' }} 
+              onClick={() => { setListType('agent'); setEditingFile(null); }}
+            >
+              LaunchAgents
+            </button>
+            <button 
+              className={`btn ${listType === 'daemon' ? 'btn-primary' : 'btn-ghost'}`} 
+              style={{ padding: '0.4rem 0.8rem', fontSize: '0.85rem', height: 'auto' }} 
+              onClick={() => { setListType('daemon'); setEditingFile(null); }}
+            >
+              LaunchDaemons
+            </button>
+          </div>
         </div>
         <div style={{ display: 'flex', gap: '0.5rem' }} className="mobile-full-width">
           <button className="btn btn-primary" style={{ padding: '0.6rem 1.2rem' }} onClick={handleAddNew}>{t.launchagent.addConfig}</button>
@@ -432,7 +459,9 @@ export default function LaunchAgentDashboard() {
 
       <div className={`responsive-grid ${editingFile ? 'showing-content' : 'showing-list'} ${!editingFile ? 'responsive-grid-auto' : ''}`}>
         <div className="launchagent-sidebar card glass-panel" style={{ padding: '1rem', display: 'flex', flexDirection: 'column', height: 'calc(100vh - 140px)', overflow: 'hidden', width: '100%', maxWidth: '100%', boxSizing: 'border-box' }}>
-          <h2 style={{ fontSize: '0.9rem', color: 'var(--color-text-muted)', marginBottom: '1rem', fontWeight: 600 }}>~/Library/LaunchAgents</h2>
+          <h2 style={{ fontSize: '0.9rem', color: 'var(--color-text-muted)', marginBottom: '1rem', fontWeight: 600 }}>
+            {listType === 'daemon' ? '/Library/LaunchDaemons' : '~/Library/LaunchAgents'}
+          </h2>
 
           <div style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden', width: '100%', paddingRight: '0.2rem' }}>
             {plists.map((plist) => (
@@ -538,8 +567,12 @@ export default function LaunchAgentDashboard() {
                   }}>
                     <Brain size={16} />
                     <span style={{ fontSize: '0.8rem', fontWeight: 700 }}>{t.launchagent.aiExplainTitle}</span>
-                    {isAiAnalyzing && <span className="text-xs animate-pulse opacity-60 ml-2" style={{ fontStyle: 'italic' }}>{t.launchagent.aiExplaining || ''}...</span>}
-                    <button onClick={() => setAnalysisResult('')} style={{ marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', fontSize: '1rem', color: 'var(--color-text-muted)' }}><X size={14} /></button>
+                    {isAiAnalyzing && <span className="text-xs text-[var(--color-text-muted)] animate-pulse ml-2" style={{ fontStyle: 'italic' }}>{t.common.analyzing || ''}...</span>}
+                    <button className="btn-icon" onClick={() => {
+                      abortControllerRef.current?.abort();
+                      setAnalysisResult('');
+                      setIsAiAnalyzing(false);
+                    }} style={{ marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', fontSize: '1rem', color: 'var(--color-text-muted)' }}><X size={14} /></button>
                   </div>
                   <div style={{ fontSize: '0.85rem', color: 'var(--color-text)', lineHeight: 1.6, padding: '1rem', overflowY: 'auto' }}>
                     <ReactMarkdown remarkPlugins={[remarkGfm]}>{analysisResult || (isAiAnalyzing ? t.launchagent.aiExplaining : '')}</ReactMarkdown>
@@ -612,11 +645,17 @@ export default function LaunchAgentDashboard() {
       )}
 
       {isAddingNew && (
-        <div className="modal-overlay" onClick={() => setIsAddingNew(false)}>
+        <div className="modal-overlay" onClick={() => {
+          abortControllerRef.current?.abort();
+          setIsAddingNew(false);
+        }}>
           <div className="card glass-panel modal-content" onClick={e => e.stopPropagation()} style={{ maxWidth: '800px', width: '95%', height: '80vh', display: 'flex', flexDirection: 'column' }}>
             <div className="flex-between" style={{ marginBottom: '1rem' }}>
               <h3 style={{ margin: 0 }}>{t.launchagent.addConfig}</h3>
-              <button className="btn-icon" onClick={() => setIsAddingNew(false)}><X size={20} /></button>
+              <button className="btn-icon" onClick={() => {
+                abortControllerRef.current?.abort();
+                setIsAddingNew(false);
+              }}><X size={20} /></button>
             </div>
             
             <div style={{ marginBottom: '1rem' }}>
