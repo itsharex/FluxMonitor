@@ -42,15 +42,15 @@ brew install --cask chentao1006/tap/flux-monitor
 
 ## 界面截图
 
-![Screenshot 1](screenshots/000001.jpg)
-![Screenshot 2](screenshots/000002.jpg)
-![Screenshot 3](screenshots/000003.jpg)
-![Screenshot 4](screenshots/000004.jpg)
-![Screenshot 5](screenshots/000005.jpg)
-![Screenshot 6](screenshots/000006.jpg)
-![Screenshot 7](screenshots/000007.jpg)
-![Screenshot 8](screenshots/000008.jpg)
-![Screenshot 9](screenshots/000009.jpg)
+![Screenshot 1](screenshots/zh/000001.jpg)
+![Screenshot 2](screenshots/zh/000002.jpg)
+![Screenshot 3](screenshots/zh/000003.jpg)
+![Screenshot 4](screenshots/zh/000004.jpg)
+![Screenshot 5](screenshots/zh/000005.jpg)
+![Screenshot 6](screenshots/zh/000006.jpg)
+![Screenshot 7](screenshots/zh/000007.jpg)
+![Screenshot 8](screenshots/zh/000008.jpg)
+![Screenshot 9](screenshots/zh/000009.jpg)
 
 ## 安装与设置
 
