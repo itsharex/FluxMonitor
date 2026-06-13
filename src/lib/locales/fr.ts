@@ -107,6 +107,9 @@ export const fr = {
     passwordIncorrect: 'Mot de passe incorrect, veuillez réessayer.',
   },
   monitor: {
+      realtimeMetrics: "Métriques en temps réel",
+      unitOverview: "Aperçu de l'unité",
+      systemInfo: "Informations système",
     title: 'Aperçu du Système',
     cpu: 'Utilisation CPU',
     memory: 'Utilisation Mémoire',

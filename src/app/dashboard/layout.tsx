@@ -49,6 +49,12 @@ export default function DashboardLayout({
   const hostname = (config as unknown as Record<string, unknown>)?.hostname as string || '';
 
   useEffect(() => {
+    if (mounted && t.appTitle) {
+      document.title = `${t.appTitle}${hostname ? ` - ${hostname}` : ''}`;
+    }
+  }, [mounted, t.appTitle, hostname]);
+
+  useEffect(() => {
     const handleEsc = (e: KeyboardEvent) => {
       if (e.key === 'Escape') setIsMenuOpen(false);
     };

@@ -107,6 +107,9 @@ export const de = {
     passwordIncorrect: 'Falsches Passwort, bitte versuchen Sie es erneut.',
   },
   monitor: {
+      realtimeMetrics: "Echtzeit-Metriken",
+      unitOverview: "Einheitenübersicht",
+      systemInfo: "Systeminformationen",
     title: 'Systemübersicht',
     cpu: 'CPU-Auslastung',
     memory: 'Speicherauslastung',

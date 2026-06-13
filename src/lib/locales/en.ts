@@ -107,6 +107,9 @@ export const en = {
       passwordIncorrect: 'Incorrect password, please try again.',
     },
     monitor: {
+      realtimeMetrics: "Real-time Metrics",
+      unitOverview: "Unit Overview",
+      systemInfo: "System Information",
       title: 'System Overview',
       cpu: 'CPU Usage',
       memory: 'Memory Usage',

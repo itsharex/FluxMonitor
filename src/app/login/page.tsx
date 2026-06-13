@@ -29,6 +29,12 @@ export default function LoginPage() {
       .catch(err => console.error('Failed to fetch system info:', err));
   }, []);
 
+  useEffect(() => {
+    if (mounted && t.appTitle) {
+      document.title = `${t.appTitle}${systemInfo?.hostname ? ` - ${systemInfo.hostname}` : ''}`;
+    }
+  }, [mounted, t.appTitle, systemInfo?.hostname]);
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);

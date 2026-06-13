@@ -107,6 +107,9 @@ export const it = {
     passwordIncorrect: 'Password errata, riprova.',
   },
   monitor: {
+      realtimeMetrics: "Metriche in tempo reale",
+      unitOverview: "Panoramica dell'unità",
+      systemInfo: "Informazioni di sistema",
     title: 'Panoramica Sistema',
     cpu: 'Utilizzo CPU',
     memory: 'Utilizzo Memoria',

@@ -107,6 +107,9 @@ export const zh = {
       passwordIncorrect: '密码错误，请重试。',
     },
     monitor: {
+      realtimeMetrics: "实时指标",
+      unitOverview: "单元概览",
+      systemInfo: "系统信息",
       title: '系统概览',
       cpu: 'CPU 使用率',
       memory: '内存使用率',

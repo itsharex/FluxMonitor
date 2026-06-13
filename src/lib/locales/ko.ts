@@ -107,6 +107,9 @@ export const ko = {
     passwordIncorrect: '비밀번호가 틀렸습니다. 다시 시도하십시오.',
   },
   monitor: {
+      realtimeMetrics: "실시간 메트릭",
+      unitOverview: "유닛 개요",
+      systemInfo: "시스템 정보",
     title: '시스템 개요',
     cpu: 'CPU 사용률',
     memory: '메모리 사용률',

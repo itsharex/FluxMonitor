@@ -107,6 +107,9 @@ export const es = {
     passwordIncorrect: 'Contraseña incorrecta, por favor inténtalo de nuevo.',
   },
   monitor: {
+      realtimeMetrics: "Métricas en tiempo real",
+      unitOverview: "Descripción de la unidad",
+      systemInfo: "Información del sistema",
     title: 'Resumen del Sistema',
     cpu: 'Uso de CPU',
     memory: 'Uso de Memoria',

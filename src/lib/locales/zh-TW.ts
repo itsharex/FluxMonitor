@@ -107,6 +107,9 @@ export const zhTW = {
     passwordIncorrect: '密碼錯誤，請重試。',
   },
   monitor: {
+      realtimeMetrics: "即時指標",
+      unitOverview: "單元概览",
+      systemInfo: "系统資訊",
     title: '系統概覽',
     cpu: 'CPU 使用率',
     memory: '記憶體使用率',

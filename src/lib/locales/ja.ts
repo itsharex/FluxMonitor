@@ -107,6 +107,9 @@ export const ja = {
     passwordIncorrect: 'パスワードが間違っています。もう一度やり直してください。',
   },
   monitor: {
+      realtimeMetrics: "リアルタイム指標",
+      unitOverview: "ユニット概要",
+      systemInfo: "システム情報",
     title: 'システム概要',
     cpu: 'CPU 使用率',
     memory: 'メモリ使用率',

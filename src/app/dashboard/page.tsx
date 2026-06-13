@@ -425,7 +425,7 @@ export default function DashboardOverview() {
       )}
 
 
-      <h2 style={{ fontSize: '1.1rem', fontWeight: 600, color: 'var(--color-text)', marginTop: '0rem', marginBottom: '-0.5rem' }}>实时指标</h2>
+      <h2 style={{ fontSize: '1.1rem', fontWeight: 600, color: 'var(--color-text)', marginTop: '0rem', marginBottom: '-0.5rem' }}>{t.monitor.realtimeMetrics}</h2>
       <div className="responsive-grid responsive-grid-3">
         <div className="card glass-panel chart-card" style={{ padding: '1rem', minHeight: '200px', display: 'flex', flexDirection: 'column' }}>
           <div style={{ marginBottom: '0.5rem', width: '100%' }}>
@@ -528,7 +528,7 @@ export default function DashboardOverview() {
       </div>
 
       {/* Summary Cards Row */}
-      <h2 style={{ fontSize: '1.1rem', fontWeight: 600, color: 'var(--color-text)', marginTop: '0.5rem', marginBottom: '-0.5rem' }}>单元概览</h2>
+      <h2 style={{ fontSize: '1.1rem', fontWeight: 600, color: 'var(--color-text)', marginTop: '0.5rem', marginBottom: '-0.5rem' }}>{t.monitor.unitOverview}</h2>
       <div className="responsive-grid responsive-grid-3">
         {features?.processes !== false && (
           <Link href="/dashboard/processes" style={{ textDecoration: 'none', display: 'block' }}>
@@ -667,7 +667,7 @@ export default function DashboardOverview() {
       </div>
 
       {/* Info Card Row */}
-      <h2 style={{ fontSize: '1.1rem', fontWeight: 600, color: 'var(--color-text)', marginTop: '0.5rem', marginBottom: '-0.5rem' }}>系统信息</h2>
+      <h2 style={{ fontSize: '1.1rem', fontWeight: 600, color: 'var(--color-text)', marginTop: '0.5rem', marginBottom: '-0.5rem' }}>{t.monitor.systemInfo}</h2>
       <div className="responsive-grid responsive-grid-3">
         <div className="card glass-panel" style={{ padding: '1.25rem', display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
           <StatRow label={t.monitor.hostname} value={stats?.hostname} />
