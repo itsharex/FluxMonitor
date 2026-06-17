@@ -116,8 +116,8 @@ class InstaTunnelDownloader: ObservableObject {
     }
     
     func downloadInstaTunnel(completion: @escaping (Bool) -> Void) {
-        // Use the darwin-amd64 binary for all macOS architectures (works via Rosetta on arm64)
-        let urlString = "https://api.instatunnel.my/releases/instatunnel-darwin-amd64"
+        let arch = instaTunnelArchitecture()
+        let urlString = "https://api.instatunnel.my/releases/instatunnel-darwin-\(arch)"
         
         guard let url = URL(string: urlString) else {
             self.status = .error("Invalid URL")
@@ -125,6 +125,7 @@ class InstaTunnelDownloader: ObservableObject {
             return
         }
         
+        appendLog("Detected InstaTunnel architecture: \(arch)\n")
         appendLog("Downloading InstaTunnel from: \(urlString)\n")
         self.status = .downloading(progress: 0)
         self.completion = completion
@@ -135,6 +136,14 @@ class InstaTunnelDownloader: ObservableObject {
         
         downloadTask = session.downloadTask(with: url)
         downloadTask?.resume()
+    }
+
+    private func instaTunnelArchitecture() -> String {
+        #if arch(arm64)
+        return "arm64"
+        #else
+        return "amd64"
+        #endif
     }
     
     fileprivate func handleDownloadFinish(localURL: URL) {
