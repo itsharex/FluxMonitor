@@ -166,12 +166,13 @@ struct AddressLinkView: View {
     
     var qrContent: String {
         let hostName = Host.current().localizedName ?? ProcessInfo.processInfo.hostName
-        let dict = ["url": urlString, "hostname": hostName]
-        if let data = try? JSONSerialization.data(withJSONObject: dict, options: []),
-           let jsonString = String(data: data, encoding: .utf8) {
-            return jsonString
-        }
-        return urlString
+        let u = UserDefaults.standard.string(forKey: "username") ?? ""
+        
+        let urlEncoded = urlString.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? ""
+        let hostEncoded = hostName.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? ""
+        let uEncoded = u.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? ""
+        
+        return "https://chentao1006.github.io/FluxRemote/connect.html?url=\(urlEncoded)&hostname=\(hostEncoded)&u=\(uEncoded)"
     }
     
     var body: some View {

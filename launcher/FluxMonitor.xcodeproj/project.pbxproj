@@ -25,6 +25,7 @@
 		DDFCB55E4E3A38AA88D80A79 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03BFEE759758B114455EF06B /* main.swift */; };
 		FA3B2DE51A2AD83AB616C38C /* AboutView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA649293D6EEBD8A0CDFD409 /* AboutView.swift */; };
 		FDD93ABC7B4C4B8846FFE688 /* ServiceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD95961A54AE7D60D4DB779D /* ServiceView.swift */; };
+		C6MQTT01002F9A1200REMOTE /* MQTTRemoteSync.swift in Sources */ = {isa = PBXBuildFile; fileRef = C6MQTT01002F9A1100REMOTE /* MQTTRemoteSync.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -49,6 +50,7 @@
 		CC0D7807E9C1E45DF24911FF /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		DD95961A54AE7D60D4DB779D /* ServiceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServiceView.swift; sourceTree = "<group>"; };
 		F6414C59A89ED941499CAACA /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		C6MQTT01002F9A1100REMOTE /* MQTTRemoteSync.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MQTTRemoteSync.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -78,6 +80,7 @@
 				5D42E554697427FB4160773F /* LogViewer.swift */,
 				03BFEE759758B114455EF06B /* main.swift */,
 				B8C977157EF1FB1B8DEFEB72 /* MainView.swift */,
+				C6MQTT01002F9A1100REMOTE /* MQTTRemoteSync.swift */,
 				4A9F682A360C374FC256EAE5 /* NetworkUtils.swift */,
 				AABBCCD01234567890ABCDEF /* NodeInstaller.swift */,
 				9CABB224E49A7CF9D1D96CF2 /* ProcessManager.swift */,
@@ -219,6 +222,7 @@
 				794CB254DDE3B638215ADB1C /* SettingsView.swift in Sources */,
 				7E582D527BF3B019CE6784CB /* WelcomeView.swift in Sources */,
 				BE84BB595B073EB883790509 /* i18n.swift in Sources */,
+				C6MQTT01002F9A1200REMOTE /* MQTTRemoteSync.swift in Sources */,
 				DDFCB55E4E3A38AA88D80A79 /* main.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

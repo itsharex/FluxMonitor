@@ -174,7 +174,12 @@ class I18N: ObservableObject {
         "android_alpha_notice": "注：Android 版目前处于 Alpha 测试阶段，请按以下步骤参与：",
         "join_group": "1. 加入 Google Group 测试组",
         "download_android": "2. 前往 Play 商店下载",
-        "feedback_suggestions": "反馈与建议"
+        "feedback_suggestions": "反馈与建议",
+        "mqtt_qr_title": "连接远控端",
+        "mqtt_qr_desc": "用 Flux Remote App 扫描此二维码，即可在手机上自动获取最新的公网地址。扫码一次，终身有效。",
+        "mqtt_connected": "已连接",
+        "mqtt_standby": "待机",
+        "mqtt_last_sync": "上次同步:"
     ]
     
     private let enDict = [
@@ -266,7 +271,12 @@ class I18N: ObservableObject {
         "android_alpha_notice": "Note: Android is currently in Alpha. Please follow the steps below:",
         "join_group": "1. Join Google Group",
         "download_android": "2. Download on Play Store",
-        "feedback_suggestions": "Feedback & Suggestions"
+        "feedback_suggestions": "Feedback & Suggestions",
+        "mqtt_qr_title": "Connect Remote",
+        "mqtt_qr_desc": "Scan this QR code with Flux Remote App to automatically receive the latest public URL on your phone. Scan once, works forever.",
+        "mqtt_connected": "Connected",
+        "mqtt_standby": "Standby",
+        "mqtt_last_sync": "Last sync:"
     ]
 
     private let zhTWDict = [
@@ -358,7 +368,12 @@ class I18N: ObservableObject {
         "android_alpha_notice": "註：Android 版目前處於 Alpha 測試階段，請按以下步驟參與：",
         "join_group": "1. 加入 Google Group 測試組",
         "download_android": "2. 前往 Play 商店下載",
-        "feedback_suggestions": "回饋與建議"
+        "feedback_suggestions": "回饋與建議",
+        "mqtt_qr_title": "連接遠控端",
+        "mqtt_qr_desc": "用 Flux Remote App 掃描此 QR 碼，即可在手機上自動取得最新的公網位址。掃碼一次，終身有效。",
+        "mqtt_connected": "已連接",
+        "mqtt_standby": "待機",
+        "mqtt_last_sync": "上次同步:"
     ]
 
     private let jaDict = [
@@ -450,7 +465,12 @@ class I18N: ObservableObject {
         "android_alpha_notice": "注: Android版は現在Alphaです。以下の手順に従ってください:",
         "join_group": "1. Google Group に参加",
         "download_android": "2. Play ストアでダウンロード",
-        "feedback_suggestions": "フィードバックと提案"
+        "feedback_suggestions": "フィードバックと提案",
+        "mqtt_qr_title": "リモート接続",
+        "mqtt_qr_desc": "Flux Remote アプリでこの QR コードをスキャンすると、最新のパブリック URL が自動的に携帯に届きます。一度スキャンすれば、永久に有効です。",
+        "mqtt_connected": "接続済み",
+        "mqtt_standby": "スタンバイ",
+        "mqtt_last_sync": "最終同期:"
     ]
 
     private let koDict = [
@@ -542,7 +562,12 @@ class I18N: ObservableObject {
         "android_alpha_notice": "참고: Android 버전은 현재 Alpha 단계입니다. 다음 단계를 따르십시오:",
         "join_group": "1. Google Group 가입",
         "download_android": "2. Play 스토어에서 다운로드",
-        "feedback_suggestions": "피드백 및 제안"
+        "feedback_suggestions": "피드백 및 제안",
+        "mqtt_qr_title": "원격 연결",
+        "mqtt_qr_desc": "Flux Remote 앱으로 이 QR 코드를 스캔하면 최신 퍼블릭 URL이 자동으로 휴대폰에 전달됩니다. 한 번 스캔하면 영원히 유효합니다.",
+        "mqtt_connected": "연결됨",
+        "mqtt_standby": "대기 중",
+        "mqtt_last_sync": "마지막 동기화:"
     ]
 
     private let esDict = [
@@ -634,7 +659,12 @@ class I18N: ObservableObject {
         "android_alpha_notice": "Nota: Android está en fase Alfa. Siga estos pasos:",
         "join_group": "1. Únase al grupo de Google",
         "download_android": "2. Descargue en Play Store",
-        "feedback_suggestions": "Comentarios y Sugerencias"
+        "feedback_suggestions": "Comentarios y Sugerencias",
+        "mqtt_qr_title": "Conectar Remoto",
+        "mqtt_qr_desc": "Escanea este código QR con Flux Remote App para recibir automáticamente la última URL pública en tu teléfono. Escanea una vez, funciona para siempre.",
+        "mqtt_connected": "Conectado",
+        "mqtt_standby": "En espera",
+        "mqtt_last_sync": "Última sincronización:"
     ]
 
     private let deDict = [
@@ -726,7 +756,12 @@ class I18N: ObservableObject {
         "android_alpha_notice": "Hinweis: Android ist derzeit in der Alpha-Phase. Befolgen Sie diese Schritte:",
         "join_group": "1. Google Group beitreten",
         "download_android": "2. Im Play Store herunterladen",
-        "feedback_suggestions": "Feedback & Vorschläge"
+        "feedback_suggestions": "Feedback & Vorschläge",
+        "mqtt_qr_title": "Fernverbindung",
+        "mqtt_qr_desc": "Scannen Sie diesen QR-Code mit der Flux Remote App, um automatisch die neueste öffentliche URL auf Ihrem Telefon zu erhalten. Einmal scannen, für immer gültig.",
+        "mqtt_connected": "Verbunden",
+        "mqtt_standby": "Bereitschaft",
+        "mqtt_last_sync": "Letzte Synchronisierung:"
     ]
 
     private let frDict = [
@@ -818,7 +853,12 @@ class I18N: ObservableObject {
         "android_alpha_notice": "Remarque : Android est en version Alpha. Suivez ces étapes :",
         "join_group": "1. Rejoindre le groupe Google",
         "download_android": "2. Télécharger sur le Play Store",
-        "feedback_suggestions": "Commentaires & Suggestions"
+        "feedback_suggestions": "Commentaires & Suggestions",
+        "mqtt_qr_title": "Connexion à distance",
+        "mqtt_qr_desc": "Scannez ce QR code avec l'application Flux Remote pour recevoir automatiquement la dernière URL publique sur votre téléphone. Scannez une fois, valide pour toujours.",
+        "mqtt_connected": "Connecté",
+        "mqtt_standby": "En veille",
+        "mqtt_last_sync": "Dernière synchronisation :"
     ]
 
     private let itDict = [
@@ -910,7 +950,12 @@ class I18N: ObservableObject {
         "android_alpha_notice": "Nota: Android è in fase Alpha. Segui questi passaggi:",
         "join_group": "1. Unisciti al Gruppo Google",
         "download_android": "2. Scarica dal Play Store",
-        "feedback_suggestions": "Feedback & Suggerimenti"
+        "feedback_suggestions": "Feedback & Suggerimenti",
+        "mqtt_qr_title": "Connessione remota",
+        "mqtt_qr_desc": "Scansiona questo codice QR con l'app Flux Remote per ricevere automaticamente l'ultimo URL pubblico sul tuo telefono. Scansiona una volta, valido per sempre.",
+        "mqtt_connected": "Connesso",
+        "mqtt_standby": "In attesa",
+        "mqtt_last_sync": "Ultima sincronizzazione:"
     ]
 }
 

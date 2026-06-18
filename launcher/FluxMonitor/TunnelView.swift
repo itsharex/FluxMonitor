@@ -427,6 +427,9 @@ class TunnelManager: ObservableObject {
         
         // Sync to iCloud as offline
         ICloudManager.shared.syncServer(url: nil, isOffline: true)
+        
+        // Disconnect MQTT
+        MQTTRemoteSync.shared.disconnect()
     }
     
     func restart() {
@@ -487,6 +490,9 @@ class TunnelManager: ObservableObject {
                     
                     // Sync to iCloud
                     ICloudManager.shared.syncServer(url: url, isOffline: false)
+                    
+                    // Publish to MQTT for cross-network remote access
+                    MQTTRemoteSync.shared.publishURL(url)
                     
                     // Schedule 24h restart
                     self.scheduleRestart()
@@ -561,6 +567,8 @@ struct TunnelView: View {
     @AppStorage("tunnelSubdomain") private var tunnelSubdomain: String = ""
     @AppStorage("port") private var localPort: Int = 4210
     
+    @State private var showingQRPopover = false
+    
     @State private var showingErrorAlert = false
     @State private var errorMessage = ""
     
@@ -609,11 +617,24 @@ struct TunnelView: View {
                         Text(i18n.t("public_url"))
                             .font(.caption)
                             .foregroundColor(.secondary)
-                        Link(destination: urlObj) {
-                            Text(url)
-                                .font(.subheadline)
-                                .foregroundColor(.blue)
-                                .underline()
+                        HStack(spacing: 8) {
+                            Link(destination: urlObj) {
+                                Text(url)
+                                    .font(.subheadline)
+                                    .foregroundColor(.blue)
+                                    .underline()
+                            }
+                            
+                            Button(action: { showingQRPopover.toggle() }) {
+                                Image(systemName: "qrcode")
+                                    .font(.subheadline)
+                                    .foregroundColor(.blue)
+                            }
+                            .buttonStyle(.plain)
+                            .help(i18n.t("mqtt_qr_title"))
+                            .popover(isPresented: $showingQRPopover) {
+                                MQTTQRCodeView()
+                            }
                         }
                     }
                 }
