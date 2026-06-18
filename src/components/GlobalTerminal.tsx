@@ -308,7 +308,7 @@ export default function GlobalTerminal() {
   };
 
   const analyzeOutput = async () => {
-    if (!cmdResult || isExecuting) return;
+    if (!cmdResult) return;
     if (analysisResult) {
       setAnalysisResult('');
       return;
@@ -747,7 +747,7 @@ export default function GlobalTerminal() {
               </div>
               
               {/* Floating Action within Terminal */}
-              {cmdResult && !isExecuting && !aiLoading && (
+              {cmdResult && !aiLoading && (
                 <button
                   onClick={analyzeOutput}
                   disabled={isAnalyzing}

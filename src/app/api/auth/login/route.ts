@@ -14,7 +14,7 @@ export async function POST(request: Request) {
     );
 
     if (user) {
-      const secretKey = new TextEncoder().encode(config.jwtSecret || 'CHANGE_ME_TO_A_LONG_RANDOM_STRING');
+      const secretKey = new TextEncoder().encode(process.env.JWT_SECRET || 'CHANGE_ME_TO_A_LONG_RANDOM_STRING');
       const expirationTime = autoLogin ? '365d' : '24h';
       const maxAge = autoLogin ? 60 * 60 * 24 * 365 : 60 * 60 * 24;
 

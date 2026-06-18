@@ -1,8 +1,13 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { X, Play, Square } from "lucide-react";
+import { X, Play, Square, Sparkles, Brain } from "lucide-react";
 import { useLanguage } from "@/lib/LanguageContext";
+import { useSettings } from "@/lib/SettingsContext";
+import { streamAiContent } from "@/lib/aiStream";
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import Link from 'next/link';
 
 interface ExecModalProps {
   isOpen: boolean;
@@ -12,11 +17,16 @@ interface ExecModalProps {
 
 export default function ExecModal({ isOpen, onClose, command }: ExecModalProps) {
   const { t } = useLanguage();
+  const { config } = useSettings();
   const [isExecuting, setIsExecuting] = useState(false);
   const [result, setResult] = useState("");
   const [error, setError] = useState("");
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [analysisResult, setAnalysisResult] = useState("");
   const abortControllerRef = useRef<AbortController | null>(null);
+  const aiAbortControllerRef = useRef<AbortController | null>(null);
   const resultRef = useRef<HTMLDivElement>(null);
+  const aiCacheRef = useRef<Record<string, string>>({});
 
   useEffect(() => {
     if (resultRef.current) {
@@ -37,6 +47,7 @@ export default function ExecModal({ isOpen, onClose, command }: ExecModalProps) 
     setIsExecuting(true);
     setResult("");
     setError("");
+    setAnalysisResult("");
     const controller = new AbortController();
     abortControllerRef.current = controller;
     try {
@@ -81,6 +92,50 @@ export default function ExecModal({ isOpen, onClose, command }: ExecModalProps) 
       abortControllerRef.current = null;
     }
     setIsExecuting(false);
+  };
+
+  const analyzeOutput = async () => {
+    if (!result) return;
+    if (analysisResult) {
+      setAnalysisResult('');
+      return;
+    }
+    if (aiCacheRef.current[result]) {
+      setAnalysisResult(aiCacheRef.current[result]);
+      return;
+    }
+
+    setIsAnalyzing(true);
+    setAnalysisResult(`${t.common.analyzing}... 🪄`);
+    
+    const controller = new AbortController();
+    aiAbortControllerRef.current = controller;
+    
+    streamAiContent(
+      {
+        prompt: t.monitor.aiAnalyzeOutputPrompt
+          .replace('{lang}', t.common.aiResponseLang)
+          .replace('{output}', result.length > 30000 ? `... [TRUNCATED] ...\n${result.slice(-30000)}` : result),
+        systemPrompt: 'You are an expert system administrator.',
+        config: config?.ai,
+        signal: controller.signal
+      },
+      (chunk) => {
+        setAnalysisResult(chunk);
+      },
+      () => {
+        setIsAnalyzing(false);
+        aiCacheRef.current[result] = analysisResult; // simple cache
+      },
+      (errStr) => {
+        if (errStr === 'AI_CONFIG_MISSING') {
+          setAnalysisResult(`${t.common.errors.aiConfigMissing}: ${t.common.errors.aiConfigMissingDetail}`);
+        } else {
+          setAnalysisResult(`${t.monitor.aiAnalyzeFailed || t.common.error}: ${errStr}`);
+        }
+        setIsAnalyzing(false);
+      }
+    );
   };
 
   if (!isOpen) return null;
@@ -142,6 +197,7 @@ export default function ExecModal({ isOpen, onClose, command }: ExecModalProps) 
           <div
             ref={resultRef}
             style={{
+              position: 'relative',
               fontFamily: 'monospace',
               fontSize: '0.9rem',
               background: 'var(--color-surface-bg)',
@@ -157,8 +213,74 @@ export default function ExecModal({ isOpen, onClose, command }: ExecModalProps) 
             }}
           >
             {result || (isExecuting ? t.common.loading + '...' : t.common.none || '')}
+            {result && (
+              <button
+                onClick={analyzeOutput}
+                disabled={isAnalyzing}
+                style={{
+                  position: 'absolute',
+                  right: '1.25rem',
+                  bottom: '1.25rem',
+                  background: 'rgba(59, 130, 246, 0.9)',
+                  backdropFilter: 'blur(4px)',
+                  border: '1px solid rgba(255, 255, 255, 0.2)',
+                  color: 'white',
+                  padding: '0.5rem 1rem',
+                  borderRadius: 'var(--radius-sm)',
+                  fontSize: '0.75rem',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.5rem',
+                  boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
+                  transition: 'all 0.2s'
+                }}
+                onMouseEnter={e => (e.currentTarget as HTMLButtonElement).style.background = 'var(--color-primary)'}
+                onMouseLeave={e => (e.currentTarget as HTMLButtonElement).style.background = 'rgba(59, 130, 246, 0.9)'}
+              >
+                <Sparkles size={14} className={isAnalyzing ? 'animate-pulse' : ''} /> 
+                {isAnalyzing ? t.common.analyzing : t.monitor.aiAnalyzeBtn}
+              </button>
+            )}
           </div>
           {error && <div style={{ color: 'var(--color-danger)', marginTop: '0.5rem' }}>{error}</div>}
+
+          {/* AI Advice */}
+          {(analysisResult || isAnalyzing) && (
+            <div 
+              className="ai-output-block animate-fade-in" 
+              style={{ 
+                background: 'rgba(59, 130, 246, 0.03)', 
+                borderRadius: 'var(--radius-md)', 
+                border: '1px solid rgba(59, 130, 246, 0.12)', 
+                display: 'flex', 
+                flexDirection: 'column',
+                maxHeight: '30%',
+                marginTop: '1rem'
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', padding: '0.6rem 1rem', color: 'var(--color-primary)', background: 'rgba(239, 246, 255, 0.8)', borderBottom: '1px solid rgba(59, 130, 246, 0.08)' }}>
+                <Brain size={18} /> <span style={{ fontSize: '0.85rem', fontWeight: 700 }}>{t.monitor.aiAdvice}</span>
+                {isAnalyzing && <span className="text-xs animate-pulse opacity-60 ml-2" style={{ fontStyle: 'italic' }}>{t.common.analyzing}...</span>}
+                <button onClick={() => {
+                  aiAbortControllerRef.current?.abort();
+                  setAnalysisResult('');
+                  setIsAnalyzing(false);
+                }} style={{ marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-primary)' }}>
+                  <X size={16} />
+                </button>
+              </div>
+              <div style={{ fontSize: '0.9rem', color: '#1e293b', lineHeight: 1.6, padding: '1rem', overflowY: 'auto' }}>
+                <ReactMarkdown remarkPlugins={[remarkGfm]}>{analysisResult || (isAnalyzing ? t.common.analyzing : '...')}</ReactMarkdown>
+                {analysisResult && analysisResult.includes(t.common.errors.aiConfigMissing) && (
+                  <div style={{ marginTop: '0.75rem' }}>
+                    <Link href="/dashboard/settings" className="btn btn-primary btn-sm" onClick={onClose}>{t.common.goToSettings}</Link>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
         </div>
         <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '1rem', padding: '0.75rem 1.25rem', borderTop: '1px solid var(--color-surface-border)' }}>
           {isExecuting ? (
