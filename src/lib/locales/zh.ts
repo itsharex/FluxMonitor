@@ -359,6 +359,7 @@ export const zh = {
       aiAuditPrompt: '作为系统专家，请分析配置文件 "{name}"。解释其用途、安全风险和优化建议。使用 Markdown 格式，语言：{lang}。\n\n内容：\n{content}',
       aiAnalyzePrompt: '分析配置文件 "{name}"，指出关键设置并给出优化建议。使用 Markdown 格式，语言：{lang}。\n\n内容：\n{content}',
       aiEditPrompt: '作为系统专家，请帮助我修改配置文件 "{name}"。\n用户需求：{demand}\n\n当前文件内容：\n{content}\n\n注意：仅返回修改后的完整内容，不要包含 markdown 代码块或额外解释。语言：{lang}。',
+      writePrompt: '输入你的需求来修改或生成内容...',
     },
     docker: {
       title: 'Docker 管理',

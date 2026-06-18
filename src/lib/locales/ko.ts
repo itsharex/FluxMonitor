@@ -359,6 +359,7 @@ export const ko = {
     aiAuditPrompt: '시스템 전문가로서 구성 파일 "{name}"을 분석하십시오. 목적, 보안 위험 및 최적화 권장 사항을 설명하십시오. Markdown 형식 사용, 언어: {lang}.\n\n내용:\n{content}',
     aiAnalyzePrompt: '구성 파일 "{name}"을 분석하고 핵심 설정을 지적하고 최적화 권장 사항을 제공하십시오. Markdown 형식 사용, 언어: {lang}.\n\n내용:\n{content}',
     aiEditPrompt: '시스템 전문가로서 구성 파일 "{name}" 수정을 도와주십시오.\n사용자 요구 사항: {demand}\n\n현재 파일 내용:\n{content}\n\n참고: 마크다운 코드 블록이나 추가 설명 없이 수정된 전체 내용만 반환하십시오. 언어: {lang}.',
+    writePrompt: '콘텐츠를 수정하거나 생성하기 위한 요구 사항을 입력하십시오...',
   },
   docker: {
     title: 'Docker 관리',

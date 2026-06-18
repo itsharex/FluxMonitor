@@ -359,6 +359,7 @@ export const es = {
     aiAuditPrompt: 'Como experto en sistemas, analiza el archivo de configuración "{name}". Explica su propósito, riesgos de seguridad y sugerencias de optimización. Formato Markdown, idioma: {lang}.\n\nContenido:\n{content}',
     aiAnalyzePrompt: 'Analiza el archivo de configuración "{name}":\n\n{content}',
     aiEditPrompt: 'Como experto en sistemas, ayúdame a modificar el archivo de configuración "{name}".\nRequisito del usuario: {demand}\n\nContenido actual del archivo:\n{content}\n\nNota: Devuelve SOLO el contenido modificado completo sin bloques markdown ni explicaciones adicionales. Idioma: {lang}.',
+    writePrompt: 'Ingresa tu requisito para modificar o generar contenido...',
   },
   docker: {
     title: 'Gestión de Docker',

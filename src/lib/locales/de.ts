@@ -359,6 +359,7 @@ export const de = {
     aiAuditPrompt: 'Analysieren Sie als Systemexperte die Konfigurationsdatei "{name}". Erklären Sie ihren Zweck, Sicherheitsrisiken und Optimierungsvorschläge. Markdown-Format, Sprache: {lang}.\n\nInhalt:\n{content}',
     aiAnalyzePrompt: 'Analysieren Sie die Konfigurationsdatei "{name}":\n\n{content}',
     aiEditPrompt: 'Als Systemexperte helfen Sie mir bitte, die Konfigurationsdatei "{name}" zu ändern.\nBenutzeranforderung: {demand}\n\nAktueller Dateiinhalt:\n{content}\n\nHinweis: Geben Sie NUR den vollständig geänderten Inhalt OHNE Markdown-Blöcke oder zusätzliche Erklärungen zurück. Sprache: {lang}.',
+    writePrompt: 'Geben Sie Ihre Anforderung zur Änderung oder Generierung von Inhalten ein...',
   },
   docker: {
     title: 'Docker-Verwaltung',

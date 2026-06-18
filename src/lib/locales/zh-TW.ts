@@ -359,6 +359,7 @@ export const zhTW = {
     aiAuditPrompt: '作為系統專家，請分析設定檔 "{name}"。解釋其用途、安全風險和最佳化建議。使用 Markdown 格式，語言：{lang}。\n\n內容：\n{content}',
     aiAnalyzePrompt: '分析設定檔 "{name}"，指出關鍵設定並給出最佳化建議。使用 Markdown 格式，語言：{lang}。\n\n內容：\n{content}',
     aiEditPrompt: '作為系統專家，請幫助我修改設定檔 "{name}"。\n使用者需求：{demand}\n\n當前檔案內容：\n{content}\n\n注意：僅返回修改後的完整內容，不要包含 markdown 程式碼區塊或額外解釋。語言：{lang}。',
+    writePrompt: '輸入你的需求來修改或生成內容...',
   },
   docker: {
     title: 'Docker 管理',

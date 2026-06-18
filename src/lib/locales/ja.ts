@@ -359,6 +359,7 @@ export const ja = {
     aiAuditPrompt: 'システムエキスパートとして、構成ファイル "{name}" を分析してください。その目的、セキュリティリスク、最適化の提案を説明してください。Markdown 形式、言語: {lang}。\n\n内容:\n{content}',
     aiAnalyzePrompt: '構成ファイル "{name}" を分析し、重要な設定を指摘して最適化の提案を行ってください。Markdown 形式、言語: {lang}。\n\n内容:\n{content}',
     aiEditPrompt: 'システムエキスパートとして、構成ファイル "{name}" の変更を手伝ってください。\nユーザー要件: {demand}\n\n現在のファイル内容:\n{content}\n\n注意: markdown コードブロックや余分な説明を含めず、変更された完全な内容のみを返してください。言語: {lang}。',
+    writePrompt: 'コンテンツを変更または生成するための要件を入力してください...',
   },
   docker: {
     title: 'Docker 管理',

@@ -360,6 +360,7 @@ export const en = {
       aiAuditPrompt: 'As a system expert, analyze the configuration file "{name}". Explain its purpose, security risks, and optimization suggestions. Format in Markdown, language: {lang}.\n\nContent:\n{content}',
       aiAnalyzePrompt: 'Analyze configuration file "{name}":\n\n{content}',
       aiEditPrompt: 'As a system expert, help me modify the configuration file "{name}".\nUser requirement: {demand}\n\nCurrent file content:\n{content}\n\nNote: Return the full modified content ONLY without markdown blocks or extra explanation.',
+      writePrompt: 'Enter your requirement to modify or generate content...',
     },
     docker: {
       title: 'Docker Management',

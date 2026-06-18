@@ -359,6 +359,7 @@ export const it = {
     aiAuditPrompt: 'Analizza il file "{name}". Spiega lo scopo e i rischi di sicurezza. Lingua: {lang}.\n\nContenuto:\n{content}',
     aiAnalyzePrompt: 'Analizza la configurazione "{name}":\n\n{content}',
     aiEditPrompt: 'Aiutami a modificare "{name}".\nRichiesta: {demand}\n\nContenuto attuale:\n{content}\n\nRestituisci SOLO il contenuto modificato senza markdown. Lingua: {lang}.',
+    writePrompt: 'Inserisci la tua richiesta per modificare o generare contenuto...',
   },
   docker: {
     title: 'Gestione Docker',
