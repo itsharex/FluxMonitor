@@ -63,52 +63,29 @@ struct AppGuideView: View {
                 
                 // Android Column
                 VStack(spacing: 15) {
-                    HStack {
-                        Text("Android")
-                            .font(.headline)
-                        Text("Alpha")
-                            .font(.system(size: 10, weight: .bold))
-                            .padding(.horizontal, 6)
-                            .padding(.vertical, 2)
-                            .background(Color.orange.opacity(0.2))
-                            .foregroundColor(.orange)
-                            .cornerRadius(8)
-                    }
+                    Text("Android")
+                        .font(.headline)
                     
-                    VStack(alignment: .leading, spacing: 15) {
-                        Text(i18n.t("android_alpha_notice"))
+                    VStack(spacing: 10) {
+                        Image("AndroidQRCode")
+                            .resizable()
+                            .aspectRatio(contentMode: .fit)
+                            .frame(width: 140, height: 140)
+                            .cornerRadius(12)
+                            .shadow(color: Color.blue.opacity(0.3), radius: 10, x: 0, y: 5)
+                        
+                        Text(i18n.t("scan_to_remote"))
                             .font(.caption)
                             .foregroundColor(.secondary)
-                            .multilineTextAlignment(.leading)
-                        
-                        VStack(spacing: 10) {
-                            Link(destination: URL(string: "https://groups.google.com/g/flux-monitor")!) {
-                                HStack {
-                                    Image(systemName: "envelope")
-                                    Text(i18n.t("join_group"))
-                                        .font(.caption)
-                                }
-                                .frame(maxWidth: .infinity)
-                                .padding(.vertical, 8)
-                                .background(Color.secondary.opacity(0.1))
-                                .cornerRadius(8)
-                            }
-                            .buttonStyle(.plain)
-                            
-                            Link(destination: URL(string: "https://play.google.com/apps/testing/com.ct106.flux_remote")!) {
-                                HStack {
-                                    Image(systemName: "square.and.arrow.down")
-                                    Text(i18n.t("download_android"))
-                                        .font(.caption)
-                                }
-                                .frame(maxWidth: .infinity)
-                                .padding(.vertical, 8)
-                                .background(Color.secondary.opacity(0.1))
-                                .cornerRadius(8)
-                            }
-                            .buttonStyle(.plain)
-                        }
                     }
+                    
+                    Link(destination: URL(string: "https://play.google.com/store/apps/details?id=com.ct106.flux_remote")!) {
+                        Image("PlayStoreBadge")
+                            .resizable()
+                            .aspectRatio(contentMode: .fit)
+                            .frame(height: 40)
+                    }
+                    .buttonStyle(.plain)
                 }
                 .frame(maxWidth: .infinity)
             }

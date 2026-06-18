@@ -523,10 +523,10 @@ export const zh = {
     },
     client: {
       title: '浮光远控 移动端',
-      desc: '诚挚邀请您参与测试，在手机上随时随地管理您的服务器！目前提供 iOS 正式版及 Android (Alpha 测试版)。',
-      androidAlphaNotice: '注：Android 版目前处于 Alpha 测试阶段，请按以下步骤参与：',
-      joinGroup: '1. 加入 Google Group 测试组',
-      downloadAndroid: '2. 前往 Play 商店下载',
+      desc: '诚挚邀请您下载使用，在手机上随时随地管理您的服务器！目前提供 iOS 与 Android 正式版。',
+      androidAlphaNotice: '',
+      joinGroup: '',
+      downloadAndroid: '',
       dismiss: '稍后再说',
       scanToRemote: '扫码体验',
       appStoreBadge: '/app-store-badge-zh.svg'

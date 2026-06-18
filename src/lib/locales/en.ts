@@ -522,10 +522,10 @@ export const en = {
     },
     client: {
       title: 'Flux Remote Mobile',
-      desc: 'We sincerely invite you to test our mobile app and manage your server anywhere! Available for iOS and Android (Alpha).',
-      androidAlphaNotice: 'Note: Android is currently in Alpha. Please follow the steps below:',
-      joinGroup: '1. Join Google Group',
-      downloadAndroid: '2. Download on Play Store',
+      desc: 'We sincerely invite you to download our mobile app and manage your server anywhere! Available for iOS and Android.',
+      androidAlphaNotice: '',
+      joinGroup: '',
+      downloadAndroid: '',
       dismiss: 'Maybe Later',
       scanToRemote: 'Scan to experience',
       appStoreBadge: '/app-store-badge-en.svg'

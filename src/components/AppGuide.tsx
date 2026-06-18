@@ -32,7 +32,7 @@ export default function AppGuide({ isOpen, onClose }: AppGuideProps) {
             <div className="qr-section">
               <div className="qr-container">
                 <Image 
-                  src="/qrcode.png" 
+                  src="/ios_qrcode.png" 
                   alt={t.client?.scanToRemote || 'Scan QR Code'} 
                   width={140} 
                   height={140} 
@@ -60,30 +60,34 @@ export default function AppGuide({ isOpen, onClose }: AppGuideProps) {
           <div className="divider"></div>
           
           <div className="platform-column android-column">
-            <span className="platform-label">Android <span className="badge">Alpha</span></span>
-            <div className="android-content">
-              <p className="alpha-notice">{t.client?.androidAlphaNotice}</p>
-              <div className="android-steps">
-                <a 
-                  href="https://groups.google.com/g/flux-monitor" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="step-btn"
-                >
-                  <Mail size={16} />
-                  {t.client?.joinGroup}
-                </a>
-                <a 
-                  href="https://play.google.com/apps/testing/com.ct106.flux_remote" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="step-btn"
-                >
-                  <Download size={16} />
-                  {t.client?.downloadAndroid}
-                </a>
+            <span className="platform-label">Android</span>
+            <div className="qr-section">
+              <div className="qr-container">
+                <Image 
+                  src="/android_qrcode.png" 
+                  alt={t.client?.scanToRemote || 'Scan QR Code'} 
+                  width={140} 
+                  height={140} 
+                  className="qr-image" 
+                />
+                <div className="qr-glow"></div>
               </div>
+              <p className="qr-text">{t.client?.scanToRemote}</p>
             </div>
+            <a 
+              href="https://play.google.com/store/apps/details?id=com.ct106.flux_remote" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="store-btn"
+            >
+              <Image 
+                src="/en-play-badge.png" 
+                alt="Google Play" 
+                width={147}
+                height={44}
+                style={{ objectFit: 'contain' }}
+              />
+            </a>
           </div>
         </div>
 
