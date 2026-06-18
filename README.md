@@ -14,9 +14,10 @@ A system monitoring and management dashboard designed for **Macs running as serv
 brew install --cask chentao1006/tap/flux-monitor
 ```
 
-**iOS Client:** 
+**Mobile Clients:** 
 
 [![Download on the App Store](public/app-store-badge-en.svg)](https://apps.apple.com/app/flux-remote/id6761290185)
+[![Get it on Google Play](public/en-play-badge.png)](https://play.google.com/store/apps/details?id=com.ct106.flux_remote)
 
 
 ### Features
@@ -38,7 +39,7 @@ brew install --cask chentao1006/tap/flux-monitor
 
 - [x] **Mac Launcher App**: A native macOS application that can launch the monitor web server. No need to deploy manually.
 - [x] **iOS Client App**: A native iOS application that can monitor and manage the system on the go. ([App Store](https://apps.apple.com/app/flux-remote/id6761290185))
-- [ ] **Android Client App**: A native Android application that can monitor and manage the system on the go.
+- [x] **Android Client App**: A native Android application that can monitor and manage the system on the go. ([Google Play](https://play.google.com/store/apps/details?id=com.ct106.flux_remote))
 
 ---
 
@@ -78,10 +79,11 @@ brew tap chentao1006/tap
 brew install --cask flux-monitor
 ```
 
-### 2. iOS Client (Mobile-side)
-Monitor and manage your server from anywhere using your iPhone or iPad.
+### 2. Mobile Clients (iOS & Android)
+Monitor and manage your server from anywhere using your smartphone or tablet.
 
 [![Download on the App Store](public/app-store-badge-en.svg)](https://apps.apple.com/app/flux-remote/id6761290185)
+[![Get it on Google Play](public/en-play-badge.png)](https://play.google.com/store/apps/details?id=com.ct106.flux_remote)
 
 
 ---

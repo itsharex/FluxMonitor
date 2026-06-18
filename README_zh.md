@@ -14,9 +14,10 @@
 brew install --cask chentao1006/tap/flux-monitor
 ```
 
-**iOS 客户端:** 
+**移动端:** 
 
 [![Download on the App Store](public/app-store-badge-zh.svg)](https://apps.apple.com/app/flux-remote/id6761290185)
+[![Get it on Google Play](public/en-play-badge.png)](https://play.google.com/store/apps/details?id=com.ct106.flux_remote)
 
 
 ### 功能
@@ -36,7 +37,7 @@ brew install --cask chentao1006/tap/flux-monitor
 
 - [x] **浮光面板启动器**: 原生 macOS 应用程序，可启动监控 Web 服务器，无需手动部署。
 - [x] **iOS 客户端**: 原生 iOS 应用程序，可随时随地监控和管理系统。([App Store](https://apps.apple.com/app/flux-remote/id6761290185))
-- [ ] **Android 客户端**: 原生 Android 应用程序，可随时随地监控和管理系统。
+- [x] **Android 客户端**: 原生 Android 应用程序，可随时随地监控和管理系统。([Google Play](https://play.google.com/store/apps/details?id=com.ct106.flux_remote))
 
 ---
 
@@ -76,10 +77,11 @@ brew tap chentao1006/tap
 brew install --cask flux-monitor
 ```
 
-### 2. iOS 客户端 (移动端)
-在 iPhone 或 iPad 上随时随地监控和管理您的服务器。
+### 2. 移动端客户端 (iOS & Android)
+在手机或平板上随时随地监控和管理您的服务器。
 
 [![Download on the App Store](public/app-store-badge-zh.svg)](https://apps.apple.com/app/flux-remote/id6761290185)
+[![Get it on Google Play](public/en-play-badge.png)](https://play.google.com/store/apps/details?id=com.ct106.flux_remote)
 
 
 ---

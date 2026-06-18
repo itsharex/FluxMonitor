@@ -187,6 +187,14 @@
             box-shadow: 0 14px 34px rgba(59, 107, 184, 0.24);
         }
 
+        .btn-large {
+            min-height: 56px;
+            padding: 0 28px;
+            font-size: 1.1rem;
+            border-radius: 14px;
+            gap: 12px;
+        }
+
         .btn-secondary {
             color: var(--accent-deep);
             border-color: var(--line);
@@ -219,7 +227,17 @@
 
         .app-store-badge img {
             width: auto;
-            height: 48px;
+            height: 44px;
+        }
+
+        .play-badge img {
+            height: 44px;
+        }
+
+        .store-badges {
+            display: flex;
+            align-items: center;
+            gap: 14px;
         }
 
         main {
@@ -288,41 +306,13 @@
 
         .hero-actions {
             display: flex;
-            flex-wrap: wrap;
-            align-items: center;
-            gap: 14px;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 18px;
             margin-top: 34px;
         }
 
-        .stats-row {
-            display: grid;
-            grid-template-columns: repeat(3, minmax(0, 1fr));
-            gap: 14px;
-            max-width: 650px;
-            margin-top: 44px;
-        }
 
-        .stat-card {
-            min-height: 96px;
-            padding: 18px;
-            border: 1px solid var(--line);
-            border-radius: 18px;
-            background: rgba(255, 255, 255, 0.045);
-        }
-
-        .stat-card strong {
-            display: block;
-            font-size: 1.75rem;
-            line-height: 1;
-        }
-
-        .stat-card span {
-            display: block;
-            margin-top: 8px;
-            color: var(--dim);
-            font-size: 0.88rem;
-            font-weight: 700;
-        }
 
         .hero-visual {
             position: relative;
@@ -940,6 +930,15 @@
             }
 
             .btn,
+            .store-badges {
+                width: 100%;
+            }
+
+            .store-badges {
+                flex-direction: column;
+                gap: 12px;
+            }
+
             .app-store-badge {
                 width: 100%;
             }
@@ -999,32 +998,26 @@
                     Mac 保持可访问。</p>
                 <div class="hero-actions">
                     <a href="https://github.com/chentao1006/FluxMonitor/releases/latest/download/FluxMonitor.dmg"
-                        class="btn btn-primary">
+                        class="btn btn-primary btn-large">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                            <polyline points="7 10 12 15 17 10"/>
+                            <line x1="12" y1="15" x2="12" y2="3"/>
+                        </svg>
                         <span lang-en>Download Server for macOS</span>
                         <span lang-zh>下载浮光启动器</span>
                     </a>
-                    <a href="https://apps.apple.com/app/flux-remote/id6761290185" class="app-store-badge">
-                        <img src="public/app-store-badge-en.svg" alt="Download on the App Store" lang-en>
-                        <img src="public/app-store-badge-zh.svg" alt="在 App Store 下载" lang-zh>
-                    </a>
-                </div>
-                <div class="stats-row">
-                    <div class="stat-card">
-                        <strong>4210</strong>
-                        <span lang-en>Default local port</span>
-                        <span lang-zh>默认本地端口</span>
-                    </div>
-                    <div class="stat-card">
-                        <strong>9+</strong>
-                        <span lang-en>Server modules</span>
-                        <span lang-zh>服务管理模块</span>
-                    </div>
-                    <div class="stat-card">
-                        <strong>iOS</strong>
-                        <span lang-en>Remote client</span>
-                        <span lang-zh>浮光远控</span>
+                    <div class="store-badges">
+                        <a href="https://apps.apple.com/app/flux-remote/id6761290185" class="app-store-badge">
+                            <img src="public/app-store-badge-en.svg" alt="Download on the App Store" lang-en>
+                            <img src="public/app-store-badge-zh.svg" alt="在 App Store 下载" lang-zh>
+                        </a>
+                        <a href="https://play.google.com/store/apps/details?id=com.ct106.flux_remote" class="app-store-badge play-badge">
+                            <img src="public/en-play-badge.png" alt="Get it on Google Play">
+                        </a>
                     </div>
                 </div>
+
             </div>
 
             <div class="hero-visual" aria-label="Flux Monitor dashboard preview">
@@ -1329,10 +1322,15 @@
                         from the Mac.</p>
                     <p lang-zh>连接浮光启动器后，可以离开电脑查看状态并执行常用操作。</p>
                     <div class="download-actions">
-                        <a href="https://apps.apple.com/app/flux-remote/id6761290185" class="app-store-badge">
-                            <img src="public/app-store-badge-en.svg" alt="Download on the App Store" lang-en>
-                            <img src="public/app-store-badge-zh.svg" alt="在 App Store 下载" lang-zh>
-                        </a>
+                        <div class="store-badges">
+                            <a href="https://apps.apple.com/app/flux-remote/id6761290185" class="app-store-badge">
+                                <img src="public/app-store-badge-en.svg" alt="Download on the App Store" lang-en>
+                                <img src="public/app-store-badge-zh.svg" alt="在 App Store 下载" lang-zh>
+                            </a>
+                            <a href="https://play.google.com/store/apps/details?id=com.ct106.flux_remote" class="app-store-badge play-badge">
+                                <img src="public/en-play-badge.png" alt="Get it on Google Play">
+                            </a>
+                        </div>
                         <a href="https://github.com/chentao1006/FluxMonitor#installation--setup"
                             class="btn btn-secondary">
                             <span lang-en>Setup guide</span>
