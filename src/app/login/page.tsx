@@ -103,6 +103,8 @@ export default function LoginPage() {
           </div>
           <h1 className="card-title" style={{ fontSize: '2.5rem', marginBottom: '0.25rem', fontWeight: 900, letterSpacing: '0.1em' }} suppressHydrationWarning>{t.login.title}</h1>
           {t.login.logoText && <div style={{ fontSize: '1rem', color: 'var(--color-primary)', fontWeight: 600, letterSpacing: '0.6em', textIndent: '0.6em', marginBottom: '0.5rem', opacity: 0.8 }} suppressHydrationWarning>{t.login.logoText}</div>}
+
+          <p style={{ color: 'var(--color-text-muted)', fontSize: '0.9rem', marginBottom: t.login.logoText ? '0' : '1.5rem' }} suppressHydrationWarning>{t.login.subtitle}</p>
           
           {systemInfo && (
             <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.75rem', background: 'var(--color-surface-bg)', padding: '0.5rem 1rem', borderRadius: '20px', border: '1px solid var(--color-surface-border)', marginBottom: '1.5rem' }}>
@@ -114,8 +116,6 @@ export default function LoginPage() {
               <span style={{ fontSize: '0.85rem', color: 'var(--color-text-muted)', fontWeight: 600 }}>v{systemInfo.version}</span>
             </div>
           )}
-
-          <p style={{ color: 'var(--color-text-muted)', fontSize: '0.9rem', marginBottom: t.login.logoText ? '0' : '1.5rem' }} suppressHydrationWarning>{t.login.subtitle}</p>
         </div>
 
         {error && (

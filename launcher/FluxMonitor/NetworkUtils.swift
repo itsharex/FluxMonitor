@@ -35,6 +35,37 @@ class NetworkUtils {
         }
         return address ?? "localhost"
     }
+
+    static func getAllLocalIPAddresses() -> [String] {
+        var addresses: [String] = []
+        var ifaddr: UnsafeMutablePointer<ifaddrs>?
+        
+        if getifaddrs(&ifaddr) == 0 {
+            var ptr = ifaddr
+            while ptr != nil {
+                defer { ptr = ptr?.pointee.ifa_next }
+                
+                guard let interface = ptr?.pointee else { continue }
+                let addrFamily = interface.ifa_addr.pointee.sa_family
+                
+                if addrFamily == UInt8(AF_INET) {
+                    let name = String(cString: interface.ifa_name)
+                    if (name.hasPrefix("en") || name.hasPrefix("eth")) {
+                        var hostname = [CChar](repeating: 0, count: Int(NI_MAXHOST))
+                        getnameinfo(interface.ifa_addr, socklen_t(interface.ifa_addr.pointee.sa_len),
+                                   &hostname, socklen_t(hostname.count),
+                                   nil, socklen_t(0), NI_NUMERICHOST)
+                        let address = String(cString: hostname)
+                        if !addresses.contains(address) {
+                            addresses.append(address)
+                        }
+                    }
+                }
+            }
+            freeifaddrs(ifaddr)
+        }
+        return addresses
+    }
 }
 
 class AptabaseTracker {

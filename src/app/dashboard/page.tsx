@@ -531,7 +531,7 @@ export default function DashboardOverview() {
       <h2 style={{ fontSize: '1.1rem', fontWeight: 600, color: 'var(--color-text)', marginTop: '0.5rem', marginBottom: '-0.5rem' }}>{t.monitor.unitOverview}</h2>
       <div className="responsive-grid responsive-grid-3">
         {features?.processes !== false && (
-          <Link href="/dashboard/processes" style={{ textDecoration: 'none', display: 'block' }}>
+          <Link href="/dashboard/processes" style={{ textDecoration: 'none', display: 'block', height: '100%' }}>
             <div className="stat-card glass-panel">
               <div className="stat-card-header">
                 <div className="stat-card-icon">
@@ -555,7 +555,7 @@ export default function DashboardOverview() {
         )}
 
         {features?.logs !== false && (
-          <Link href="/dashboard/logs" style={{ textDecoration: 'none', display: 'block' }}>
+          <Link href="/dashboard/logs" style={{ textDecoration: 'none', display: 'block', height: '100%' }}>
             <div className="stat-card glass-panel">
               <div className="stat-card-header">
                 <div className="stat-card-icon">
@@ -578,7 +578,7 @@ export default function DashboardOverview() {
         )}
 
         {features?.configs !== false && (
-          <Link href="/dashboard/configs" style={{ textDecoration: 'none', display: 'block' }}>
+          <Link href="/dashboard/configs" style={{ textDecoration: 'none', display: 'block', height: '100%' }}>
             <div className="stat-card glass-panel">
               <div className="stat-card-header">
                 <div className="stat-card-icon">
@@ -603,7 +603,7 @@ export default function DashboardOverview() {
         )}
 
         {features?.launchagent !== false && (
-          <Link href="/dashboard/launchagent" style={{ textDecoration: 'none', display: 'block' }}>
+          <Link href="/dashboard/launchagent" style={{ textDecoration: 'none', display: 'block', height: '100%' }}>
             <div className="stat-card glass-panel">
               <div className="stat-card-header">
                 <div className="stat-card-icon">
@@ -624,7 +624,7 @@ export default function DashboardOverview() {
         )}
 
         {features?.docker !== false && (
-          <Link href="/dashboard/docker" style={{ textDecoration: 'none', display: 'block' }}>
+          <Link href="/dashboard/docker" style={{ textDecoration: 'none', display: 'block', height: '100%' }}>
             <div className="stat-card glass-panel">
               <div className="stat-card-header">
                 <div className="stat-card-icon">
@@ -645,7 +645,7 @@ export default function DashboardOverview() {
         )}
 
         {features?.nginx !== false && (
-          <Link href="/dashboard/nginx" style={{ textDecoration: 'none', display: 'block' }}>
+          <Link href="/dashboard/nginx" style={{ textDecoration: 'none', display: 'block', height: '100%' }}>
             <div className="stat-card glass-panel">
               <div className="stat-card-header">
                 <div className="stat-card-icon">

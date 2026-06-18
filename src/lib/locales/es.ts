@@ -13,7 +13,7 @@ export const es = {
     settings: 'Ajustes',
     logout: 'Cerrar sesión',
     logoutConfirm: '¿Estás seguro de que quieres cerrar sesión?',
-    remoteClient: 'Flux Remote',
+    remoteClient: 'Cliente Remoto',
   },
   login: {
     title: 'Flux Monitor',
@@ -30,6 +30,8 @@ export const es = {
     autoLogin: 'Inicio de sesión automático'
   },
   common: {
+      aiModify: 'Modificar con IA',
+      generating: 'Generando...',
     all: 'Todo',
     systemDefault: 'Sistema',
     loading: 'Cargando...',

@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { useLanguage } from '@/lib/LanguageContext';
 import { useSettings } from '@/lib/SettingsContext';
-import { Rocket, ChevronLeft, Sparkles, Brain, Save, Trash2, X, Play, Square, Repeat } from 'lucide-react';
+import { Rocket, ChevronLeft, Sparkles, Brain, Save, Trash2, X, Play, Square, Repeat, CheckCircle2 } from 'lucide-react';
 import SudoModal from '@/components/SudoModal';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -42,6 +42,7 @@ export default function LaunchAgentDashboard() {
   };
 
   const [listType, setListType] = useState<'agent' | 'daemon'>('agent');
+  const [hasDaemons, setHasDaemons] = useState(true);
   const [plists, setPlists] = useState<PlistItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -65,6 +66,11 @@ export default function LaunchAgentDashboard() {
   const [newAiDemand, setNewAiDemand] = useState('');
   const [isGeneratingNew, setIsGeneratingNew] = useState(false);
   const abortControllerRef = useRef<AbortController | null>(null);
+
+  const [actionToast, setActionToast] = useState('');
+  const [showAiModify, setShowAiModify] = useState(false);
+  const [aiModifyDemand, setAiModifyDemand] = useState('');
+  const [isAiModifying, setIsAiModifying] = useState(false);
 
   const stripPlistResponse = (text: string) => {
     const trimmed = text.trim();
@@ -96,11 +102,14 @@ export default function LaunchAgentDashboard() {
   }, [t.common.error, t.common.loading, t.common.networkError]);
 
   const fetchPlists = useCallback(async () => {
+    setLoading(true);
     try {
       const res = await fetch(`/api/launchagent/list?type=${listType}`);
       const data = await res.json();
       if (data.success) {
         setPlists(data.data);
+        if (data.hasDaemons !== undefined) setHasDaemons(data.hasDaemons);
+        setError('');
       } else {
         setError(data.error || t.common.fetchFailed);
       }
@@ -151,6 +160,13 @@ export default function LaunchAgentDashboard() {
         setSudoPassword('');
         setPendingAction(null);
         fetchPlists();
+        const actionMap: Record<string, string> = { 
+          load: t.common.load || 'Load', 
+          unload: t.common.unload || 'Unload', 
+          reload: t.common.reload || 'Reload' 
+        };
+        setActionToast(`${actionMap[action] || action} ${t.common.saveSuccess?.replace('保存', '')?.replace('!', '') || 'Success'}`);
+        setTimeout(() => setActionToast(''), 2500);
       } else {
         setModalError({
           title: action === 'load' ? t.launchagent.loadFailed : action === 'unload' ? t.launchagent.unloadFailed : t.common.actionFailed,
@@ -387,6 +403,46 @@ export default function LaunchAgentDashboard() {
     }
   };
 
+  const handleAiModify = async () => {
+    if (!aiModifyDemand.trim() || isAiModifying) return;
+    setIsAiModifying(true);
+    setEditorMode('code');
+    setSaveStatus(t.common.generating);
+    
+    abortControllerRef.current?.abort();
+    abortControllerRef.current = new AbortController();
+
+    streamAiContent(
+      {
+        prompt: `Modify the following file content based on this requirement: "${aiModifyDemand}".\n\nCurrent Content:\n\`\`\`\n${fileContent}\n\`\`\`\n\nOutput ONLY the modified or generated content. Do not include any explanations, markdown code fences, or any other text.`,
+        systemPrompt: 'You are an expert macOS LaunchAgent plist generator. Return only valid plist XML. Do not include Markdown fences or extra text.',
+        config: settingsConfig?.ai,
+        signal: abortControllerRef.current.signal
+      },
+      (chunk) => {
+        let text = chunk.trim();
+        if (text.startsWith('```xml')) text = text.substring(6).trim();
+        else if (text.startsWith('```plist')) text = text.substring(8).trim();
+        else if (text.startsWith('```')) text = text.substring(3).trim();
+        if (text.endsWith('```')) text = text.substring(0, text.length - 3).trim();
+        setFileContent(text);
+      },
+      () => {
+        setIsAiModifying(false);
+        setSaveStatus(t.launchagent?.generateSuccess || 'Generated successfully');
+        setTimeout(() => setSaveStatus(''), 2000);
+      },
+      (err) => {
+        setIsAiModifying(false);
+        setSaveStatus('');
+        const content = err === 'AI_CONFIG_MISSING'
+          ? `${t.common.errors.aiConfigMissing}: ${t.common.errors.aiConfigMissingDetail}`
+          : `${t.launchagent?.generateFailed || 'Generate Failed'}: ${err}`;
+        setModalError({ title: t.launchagent?.generateFailed || 'Generate Failed', content });
+      }
+    );
+  };
+
   const handleAiExplain = async () => {
     if (!fileContent || isAiAnalyzing) return;
     if (analysisResult) { setAnalysisResult(''); return; }
@@ -427,6 +483,29 @@ export default function LaunchAgentDashboard() {
 
   return (
     <div className="page-shell grid no-scrollbar animate-fade-in" style={{ width: '100%', maxWidth: '100%' }}>
+      {actionToast && (
+        <div style={{
+          position: 'fixed',
+          top: '20px',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          background: 'var(--color-primary)',
+          color: 'white',
+          padding: '0.6rem 1.5rem',
+          borderRadius: '100px',
+          boxShadow: '0 4px 12px rgba(59, 130, 246, 0.4)',
+          zIndex: 9999,
+          display: 'flex',
+          alignItems: 'center',
+          gap: '0.5rem',
+          fontSize: '0.9rem',
+          fontWeight: 600,
+          animation: 'fadeInDown 0.3s ease-out'
+        }}>
+          <CheckCircle2 size={16} />
+          {actionToast}
+        </div>
+      )}
       <div className="flex-between dashboard-page-header" style={{ marginBottom: '0.5rem', flexWrap: 'wrap', gap: '1rem' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
           <div className="icon-container" style={{ background: 'var(--color-primary-light)', padding: '0.5rem', borderRadius: 'var(--radius-md)' }}>
@@ -434,22 +513,24 @@ export default function LaunchAgentDashboard() {
           </div>
           <h1 className="card-title" style={{ fontSize: '1.5rem', margin: 0 }}>{t.sidebar.launchagent}</h1>
           
-          <div style={{ display: 'flex', background: 'var(--color-surface-bg)', padding: '0.2rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--color-surface-border)', marginLeft: '1rem' }}>
-            <button 
-              className={`btn ${listType === 'agent' ? 'btn-primary' : 'btn-ghost'}`} 
-              style={{ padding: '0.4rem 0.8rem', fontSize: '0.85rem', height: 'auto' }} 
-              onClick={() => { setListType('agent'); setEditingFile(null); }}
-            >
-              LaunchAgents
-            </button>
-            <button 
-              className={`btn ${listType === 'daemon' ? 'btn-primary' : 'btn-ghost'}`} 
-              style={{ padding: '0.4rem 0.8rem', fontSize: '0.85rem', height: 'auto' }} 
-              onClick={() => { setListType('daemon'); setEditingFile(null); }}
-            >
-              LaunchDaemons
-            </button>
-          </div>
+          {hasDaemons && (
+            <div className="btn-group" style={{ background: 'var(--color-surface-bg)', padding: '4px', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-surface-border)', marginLeft: '1rem' }}>
+              <button 
+                className={`btn ${listType === 'agent' ? 'btn-primary' : 'btn-ghost'} btn-sm`} 
+                onClick={() => { setPlists([]); setListType('agent'); setEditingFile(null); }}
+                style={{ borderRadius: '6px', height: '28px', fontSize: '0.8rem', padding: '0 0.75rem' }}
+              >
+                LaunchAgents
+              </button>
+              <button 
+                className={`btn ${listType === 'daemon' ? 'btn-primary' : 'btn-ghost'} btn-sm`} 
+                onClick={() => { setPlists([]); setListType('daemon'); setEditingFile(null); }}
+                style={{ borderRadius: '6px', height: '28px', fontSize: '0.8rem', padding: '0 0.75rem' }}
+              >
+                LaunchDaemons
+              </button>
+            </div>
+          )}
         </div>
         <div style={{ display: 'flex', gap: '0.5rem' }} className="mobile-full-width">
           <button className="btn btn-primary" style={{ padding: '0.6rem 1.2rem' }} onClick={handleAddNew}>{t.launchagent.addConfig}</button>
@@ -530,11 +611,20 @@ export default function LaunchAgentDashboard() {
                 <div style={{ display: 'flex', gap: '0.4rem' }}>
                   <button
                     className="btn btn-ghost btn-sm"
+                    onClick={() => setShowAiModify(!showAiModify)}
+                    disabled={isAiModifying}
+                    style={{ color: '#10b981', background: 'rgba(16, 185, 129, 0.1)', height: '28px', gap: '6px' }}
+                  >
+                    <Sparkles size={15} className={isAiModifying ? 'animate-pulse' : ''} />
+                    <span style={{ fontSize: '0.8rem', fontWeight: 600 }}>{isAiModifying ? t.common.generating : t.common.aiModify}</span>
+                  </button>
+                  <button
+                    className="btn btn-ghost btn-sm"
                     onClick={handleAiExplain}
                     disabled={isAiAnalyzing}
                     style={{ color: 'var(--color-primary)', background: 'var(--color-primary-light)', height: '28px', gap: '6px' }}
                   >
-                    <Sparkles size={15} className={isAiAnalyzing ? 'animate-pulse' : ''} />
+                    <Brain size={15} className={isAiAnalyzing ? 'animate-pulse' : ''} />
                     <span style={{ fontSize: '0.8rem', fontWeight: 600 }}>{isAiAnalyzing ? t.common.analyzing : t.common.analyze}</span>
                   </button>
                   <button className="btn btn-primary btn-sm" onClick={() => saveFile()} style={{ height: '28px', padding: '0 0.75rem' }}>
@@ -542,6 +632,30 @@ export default function LaunchAgentDashboard() {
                   </button>
                 </div>
               </div>
+
+              {showAiModify && (
+                <div style={{ padding: '0.75rem 1rem', background: 'var(--color-surface-bg)', borderBottom: '1px solid var(--color-surface-border)', display: 'flex', gap: '0.5rem', alignItems: 'stretch' }}>
+                  <input
+                    type="text"
+                    className="input"
+                    placeholder={t.launchagent?.writePrompt || "Enter your requirement to modify or generate content..."}
+                    value={aiModifyDemand}
+                    onChange={e => setAiModifyDemand(e.target.value)}
+                    style={{ flex: 1, fontSize: '0.85rem', padding: '0.4rem 0.6rem', border: '1px solid rgba(16, 185, 129, 0.3)' }}
+                    onKeyDown={e => {
+                      if (e.key === 'Enter') handleAiModify();
+                    }}
+                    disabled={isAiModifying}
+                  />
+                  <button className="btn btn-success btn-sm" onClick={handleAiModify} disabled={!aiModifyDemand.trim() || isAiModifying} style={{ gap: '0.5rem', padding: '0 1rem' }}>
+                    <Sparkles size={14} className={isAiModifying ? 'animate-pulse' : ''} />
+                    {isAiModifying ? t.common.generating : t.common.generate}
+                  </button>
+                  <button className="btn btn-ghost btn-sm" onClick={() => setShowAiModify(false)} disabled={isAiModifying}>
+                    <X size={16} />
+                  </button>
+                </div>
+              )}
 
               {(analysisResult || isAiAnalyzing) && (
                 <div className="ai-output-block" style={{

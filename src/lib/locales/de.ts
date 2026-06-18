@@ -13,7 +13,7 @@ export const de = {
     settings: 'Einstellungen',
     logout: 'Abmelden',
     logoutConfirm: 'Möchten Sie sich wirklich abmelden?',
-    remoteClient: 'Flux Remote',
+    remoteClient: 'Remote-Client',
   },
   login: {
     title: 'Flux Monitor',
@@ -30,6 +30,8 @@ export const de = {
     autoLogin: 'Automatische Anmeldung'
   },
   common: {
+      aiModify: 'KI Ändern',
+      generating: 'Wird generiert...',
     all: 'Alle',
     systemDefault: 'Systemstandard',
     loading: 'Laden...',

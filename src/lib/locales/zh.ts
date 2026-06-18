@@ -13,7 +13,7 @@ export const zh = {
       settings: '系统设置',
       logout: '退出登录',
       logoutConfirm: '确定要退出登录吗？',
-      remoteClient: '浮光远控',
+      remoteClient: '远程客户端',
     },
     login: {
       title: 'Flux Monitor',
@@ -30,6 +30,8 @@ export const zh = {
       autoLogin: '自动登录'
     },
     common: {
+      aiModify: 'AI 修改',
+      generating: '生成中...',
       all: '全部',
       systemDefault: '跟随系统',
       loading: '加载中...',

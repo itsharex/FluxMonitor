@@ -55,6 +55,9 @@ export default function ConfigsDashboard() {
   // aiCacheRef removed as unused
   const abortControllerRef = useRef<AbortController | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [showAiModify, setShowAiModify] = useState(false);
+  const [aiModifyDemand, setAiModifyDemand] = useState('');
+  const [isAiModifying, setIsAiModifying] = useState(false);
   const [homePath, setHomePath] = useState('');
   const [activeCategory, setActiveCategory] = useState<string>('all');
   const [addModal, setAddModal] = useState({ isOpen: false, path: '', loading: false });
@@ -197,6 +200,48 @@ export default function ConfigsDashboard() {
           setAnalysisResult(`${t.common.error}: ${err}`);
         }
         setIsAiAnalyzing(false);
+      }
+    );
+  };
+
+  const handleAiModify = async () => {
+    const config = configs.find(c => c.id === editingId);
+    if (!config || !aiModifyDemand.trim() || isAiModifying) return;
+
+    setIsAiModifying(true);
+    setSaveStatus(t.common.generating);
+    
+    abortControllerRef.current?.abort();
+    abortControllerRef.current = new AbortController();
+
+    streamAiContent(
+      { 
+        prompt: `Modify the following configuration file content based on this requirement: "${aiModifyDemand}".\n\nCurrent Content:\n\`\`\`\n${content}\n\`\`\`\n\nOutput ONLY the modified or generated content. Do not include any explanations, markdown code fences, or any other text.`,
+        systemPrompt: 'You are an expert system administrator and configuration file editor. Output only the requested configuration file content.',
+        config: settingsConfig?.ai,
+        signal: abortControllerRef.current.signal
+      },
+      (chunk) => {
+        let text = chunk.trim();
+        if (text.startsWith('```')) {
+          text = text.replace(/^```[a-zA-Z0-9-]*\n/, '');
+        }
+        if (text.endsWith('```')) text = text.substring(0, text.length - 3).trim();
+        setContent(text);
+      },
+      () => {
+        setIsAiModifying(false);
+        setSaveStatus(t.common.saveSuccess || 'Generated successfully');
+        setTimeout(() => setSaveStatus(''), 2000);
+      },
+      (err) => {
+        setIsAiModifying(false);
+        setSaveStatus('');
+        if (err === 'AI_CONFIG_MISSING') {
+          alert(`${t.common.errors.aiConfigMissing}: ${t.common.errors.aiConfigMissingDetail}`);
+        } else {
+          alert(`AI Error: ${err}`);
+        }
       }
     );
   };
@@ -405,8 +450,12 @@ export default function ConfigsDashboard() {
                   </div>
                 </div>
                 <div style={{ display: 'flex', gap: '0.4rem' }}>
+                  <button className="btn btn-ghost btn-sm" style={{ color: '#10b981', background: 'rgba(16, 185, 129, 0.1)', height: '32px', gap: '6px' }} onClick={() => setShowAiModify(!showAiModify)} disabled={isAiModifying}>
+                    <Sparkles size={15} className={isAiModifying ? 'animate-pulse' : ''} />
+                    <span style={{ fontSize: '0.8rem', fontWeight: 600 }}>{isAiModifying ? t.common.generating : t.common.aiModify}</span>
+                  </button>
                   <button className="btn btn-ghost btn-sm" style={{ color: 'var(--color-primary)', background: 'var(--color-primary-light)', height: '32px', gap: '6px' }} onClick={() => handleAiAction()} disabled={isAiAnalyzing}>
-                    <Sparkles size={15} className={isAiAnalyzing ? 'animate-pulse' : ''} />
+                    <Brain size={15} className={isAiAnalyzing ? 'animate-pulse' : ''} />
                     <span style={{ fontSize: '0.8rem', fontWeight: 600 }}>{isAiAnalyzing ? t.common.analyzing : t.common.analyze}</span>
                   </button>
                   <button className="btn btn-primary btn-sm" style={{ height: '32px' }} onClick={() => handleSave()}>
@@ -414,6 +463,30 @@ export default function ConfigsDashboard() {
                   </button>
                 </div>
               </div>
+
+              {showAiModify && (
+                <div style={{ padding: '0.75rem 1rem', background: 'var(--color-surface-bg)', borderBottom: '1px solid var(--color-surface-border)', display: 'flex', gap: '0.5rem', alignItems: 'stretch' }}>
+                  <input
+                    type="text"
+                    className="input"
+                    placeholder={t.configs?.writePrompt || "Enter your requirement to modify or generate content..."}
+                    value={aiModifyDemand}
+                    onChange={e => setAiModifyDemand(e.target.value)}
+                    style={{ flex: 1, fontSize: '0.85rem', padding: '0.4rem 0.6rem', border: '1px solid rgba(16, 185, 129, 0.3)' }}
+                    onKeyDown={e => {
+                      if (e.key === 'Enter') handleAiModify();
+                    }}
+                    disabled={isAiModifying}
+                  />
+                  <button className="btn btn-success btn-sm" onClick={handleAiModify} disabled={!aiModifyDemand.trim() || isAiModifying} style={{ gap: '0.5rem', padding: '0 1rem' }}>
+                    <Sparkles size={14} className={isAiModifying ? 'animate-pulse' : ''} />
+                    {isAiModifying ? t.common.generating : t.common.generate}
+                  </button>
+                  <button className="btn btn-ghost btn-sm" onClick={() => setShowAiModify(false)} disabled={isAiModifying}>
+                    <X size={16} />
+                  </button>
+                </div>
+              )}
 
               {showAiPanel && (
                 <div className="ai-panel" style={{ background: 'var(--color-primary-light)', opacity: 0.95, borderBottom: '1px solid var(--color-surface-border)', maxHeight: '350px', display: 'flex', flexDirection: 'column' }}>

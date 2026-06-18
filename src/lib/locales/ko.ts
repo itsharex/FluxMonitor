@@ -13,7 +13,7 @@ export const ko = {
     settings: '시스템 설정',
     logout: '로그아웃',
     logoutConfirm: '로그아웃 하시겠습니까?',
-    remoteClient: 'Flux Remote',
+    remoteClient: '원격 클라이언트',
   },
   login: {
     title: 'Flux Monitor',
@@ -30,6 +30,8 @@ export const ko = {
     autoLogin: '자동 로그인'
   },
   common: {
+      aiModify: 'AI 수정',
+      generating: '생성 중...',
     all: '전체',
     systemDefault: '시스템 설정 따르기',
     loading: '로딩 중...',

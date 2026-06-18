@@ -240,12 +240,12 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
         statusMenuItem.isEnabled = false
         menu.addItem(statusMenuItem)
         
-        menu.addItem(NSMenuItem.separator())
-        
         let toggleTitle = isRunning ? i18n.t("stop") : i18n.t("start")
         let toggleItem = NSMenuItem(title: toggleTitle, action: #selector(toggleService), keyEquivalent: "s")
         toggleItem.target = self
         menu.addItem(toggleItem)
+        
+        menu.addItem(NSMenuItem.separator())
         
         let dashboardTitle = i18n.t("flux_monitor")
         let dashboardItem = NSMenuItem(title: dashboardTitle, action: #selector(openDashboard), keyEquivalent: "o")

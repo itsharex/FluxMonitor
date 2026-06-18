@@ -1,4 +1,5 @@
 import SwiftUI
+import CoreImage.CIFilterBuiltins
 
 struct ServiceView: View {
     @StateObject var pm = ProcessManager.shared
@@ -7,8 +8,7 @@ struct ServiceView: View {
     @AppStorage("username") var username = ""
     @AppStorage("password") var password = ""
     
-    @State private var localIP = "localhost"
-    
+    @State private var localIPs: [String] = []    
     private var portFormatter: NumberFormatter {
         let formatter = NumberFormatter()
         formatter.numberStyle = .decimal
@@ -30,16 +30,17 @@ struct ServiceView: View {
                             .font(.system(size: 20, weight: .bold))
                     }
                     
-                    if pm.isRunning, let urlObj = URL(string: "http://\(localIP):\(String(port))") {
+                    if pm.isRunning && !localIPs.isEmpty {
                         VStack(alignment: .leading, spacing: 2) {
                             Text(i18n.t("address"))
                                 .font(.caption)
                                 .foregroundColor(.secondary)
-                            Link(destination: urlObj) {
-                                Text("http://\(localIP):\(String(port))")
-                                    .font(.subheadline)
-                                    .foregroundColor(.blue)
-                                    .underline()
+                            ScrollView(.horizontal, showsIndicators: false) {
+                                HStack(spacing: 12) {
+                                    ForEach(localIPs, id: \.self) { ip in
+                                        AddressLinkView(ip: ip, port: port)
+                                    }
+                                }
                             }
                         }
                     }
@@ -127,7 +128,7 @@ struct ServiceView: View {
             }
         }
         .onAppear {
-            localIP = "localhost"
+            localIPs = NetworkUtils.getAllLocalIPAddresses()
             loadConfig()
         }
     }
@@ -152,5 +153,76 @@ struct ServiceView: View {
         
         // Notify user or UI
         AppDelegate.shared?.updateMenu()
+    }
+}
+
+struct AddressLinkView: View {
+    let ip: String
+    let port: Int
+    @State private var showQR = false
+    
+    var urlString: String { "http://\(ip):\(port)" }
+    var isLocal: Bool { ip == "localhost" || ip == "127.0.0.1" }
+    
+    var qrContent: String {
+        let hostName = Host.current().localizedName ?? ProcessInfo.processInfo.hostName
+        let dict = ["url": urlString, "hostname": hostName]
+        if let data = try? JSONSerialization.data(withJSONObject: dict, options: []),
+           let jsonString = String(data: data, encoding: .utf8) {
+            return jsonString
+        }
+        return urlString
+    }
+    
+    var body: some View {
+        if let urlObj = URL(string: urlString) {
+            HStack(spacing: 4) {
+                Link(destination: urlObj) {
+                    Text(urlString)
+                        .font(.subheadline)
+                        .foregroundColor(.blue)
+                        .underline()
+                }
+                
+                if !isLocal {
+                    Button(action: {
+                        showQR.toggle()
+                    }) {
+                        Image(systemName: "qrcode")
+                            .foregroundColor(.secondary)
+                    }
+                    .buttonStyle(.plain)
+                    .popover(isPresented: $showQR) {
+                        if let nsImage = generateQRCode(from: qrContent) {
+                            Image(nsImage: nsImage)
+                                .interpolation(.none)
+                                .resizable()
+                                .scaledToFit()
+                                .frame(width: 200, height: 200)
+                                .padding()
+                        } else {
+                            Text("Failed to generate QR code")
+                                .padding()
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
+    func generateQRCode(from string: String) -> NSImage? {
+        let context = CIContext()
+        let filter = CIFilter.qrCodeGenerator()
+        filter.message = Data(string.utf8)
+        
+        if let outputImage = filter.outputImage {
+            let transform = CGAffineTransform(scaleX: 10, y: 10)
+            let scaledImage = outputImage.transformed(by: transform)
+            
+            if let cgImage = context.createCGImage(scaledImage, from: scaledImage.extent) {
+                return NSImage(cgImage: cgImage, size: scaledImage.extent.size)
+            }
+        }
+        return nil
     }
 }

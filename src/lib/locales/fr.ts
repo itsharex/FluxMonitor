@@ -13,7 +13,7 @@ export const fr = {
     settings: 'Paramètres',
     logout: 'Déconnexion',
     logoutConfirm: 'Êtes-vous sûr de vouloir vous déconnecter ?',
-    remoteClient: 'Flux Remote',
+    remoteClient: 'Client Distant',
   },
   login: {
     title: 'Flux Monitor',
@@ -30,6 +30,8 @@ export const fr = {
     autoLogin: 'Connexion automatique'
   },
   common: {
+      aiModify: 'Modification IA',
+      generating: 'Génération en cours...',
     all: 'Tout',
     systemDefault: 'Par défaut (Système)',
     loading: 'Chargement...',

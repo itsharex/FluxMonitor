@@ -13,7 +13,7 @@ export const zhTW = {
     settings: '系統設定',
     logout: '登出',
     logoutConfirm: '確定要登出嗎？',
-    remoteClient: '浮光遠控',
+    remoteClient: '遠端客戶端',
   },
   login: {
     title: 'Flux Monitor',
@@ -30,6 +30,8 @@ export const zhTW = {
     autoLogin: '自動登入'
   },
   common: {
+      aiModify: 'AI 修改',
+      generating: '產生中...',
     all: '全部',
     systemDefault: '跟隨系統',
     loading: '載入中...',

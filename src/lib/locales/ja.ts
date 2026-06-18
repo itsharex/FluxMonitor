@@ -13,7 +13,7 @@ export const ja = {
     settings: 'システム設定',
     logout: 'ログアウト',
     logoutConfirm: 'ログアウトしてもよろしいですか？',
-    remoteClient: 'Flux Remote',
+    remoteClient: 'リモートクライアント',
   },
   login: {
     title: 'Flux Monitor',
@@ -30,6 +30,8 @@ export const ja = {
     autoLogin: '自動ログイン'
   },
   common: {
+      aiModify: 'AI 修正',
+      generating: '生成中...',
     all: 'すべて',
     systemDefault: 'システムに従う',
     loading: '読み込み中...',
