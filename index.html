@@ -227,17 +227,72 @@
 
         .app-store-badge img {
             width: auto;
-            height: 44px;
+            height: 36px;
         }
 
         .play-badge img {
-            height: 44px;
+            height: 36px;
         }
 
         .store-badges {
             display: flex;
             align-items: center;
             gap: 14px;
+        }
+
+        .homebrew-command {
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+            background: rgba(0, 0, 0, 0.15);
+            color: var(--dim);
+            padding: 6px 6px 6px 14px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            margin-top: 12px;
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            border: 1px solid var(--line);
+            cursor: pointer;
+            transition: background 0.2s, border-color 0.2s;
+            white-space: nowrap;
+        }
+
+        .homebrew-command:hover {
+            background: rgba(0, 0, 0, 0.25);
+            border-color: rgba(59, 107, 184, 0.4);
+        }
+
+        .homebrew-command .copy-btn {
+            background: rgba(255, 255, 255, 0.06);
+            border: none;
+            color: var(--dim);
+            cursor: pointer;
+            padding: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 6px;
+            transition: color 0.2s, background 0.2s;
+        }
+
+        .homebrew-command:hover .copy-btn {
+            color: var(--text);
+            background: rgba(255, 255, 255, 0.12);
+        }
+
+        .mobile-label {
+            color: var(--dim);
+            font-size: 0.95rem;
+            font-weight: 600;
+            margin-right: 4px;
+        }
+
+        .hero-secondary-action {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 8px;
         }
 
         main {
@@ -997,24 +1052,37 @@
                 <p class="hero-copy" lang-zh>浮光由 macOS 浮光启动器、Web 控制面板和浮光远控组成。你可以查看系统状态、管理端口、分析日志、控制 Docker 与 Nginx，并让
                     Mac 保持可访问。</p>
                 <div class="hero-actions">
-                    <a href="https://github.com/chentao1006/FluxMonitor/releases/latest/download/FluxMonitor.dmg"
-                        class="btn btn-primary btn-large">
-                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                            <polyline points="7 10 12 15 17 10"/>
-                            <line x1="12" y1="15" x2="12" y2="3"/>
-                        </svg>
-                        <span lang-en>Download Server for macOS</span>
-                        <span lang-zh>下载浮光启动器</span>
-                    </a>
-                    <div class="store-badges">
-                        <a href="https://apps.apple.com/app/flux-remote/id6761290185" class="app-store-badge">
-                            <img src="public/app-store-badge-en.svg" alt="Download on the App Store" lang-en>
-                            <img src="public/app-store-badge-zh.svg" alt="在 App Store 下载" lang-zh>
+                    <div class="hero-primary-action">
+                        <a href="https://github.com/chentao1006/FluxMonitor/releases/latest/download/FluxMonitor.dmg"
+                            class="btn btn-primary btn-large">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                <polyline points="7 10 12 15 17 10"/>
+                                <line x1="12" y1="15" x2="12" y2="3"/>
+                            </svg>
+                            <span lang-en>Download Server for macOS</span>
+                            <span lang-zh>下载浮光启动器</span>
                         </a>
-                        <a href="https://play.google.com/store/apps/details?id=com.ct106.flux_remote" class="app-store-badge play-badge">
-                            <img src="public/en-play-badge.png" alt="Get it on Google Play">
-                        </a>
+                        <div class="homebrew-command" onclick="copyHomebrewCommand(this)">
+                            <span>brew install --cask chentao1006/tap/flux-monitor</span>
+                            <button class="copy-btn" aria-label="Copy command">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="hero-secondary-action">
+                        <span class="mobile-label" lang-en>Mobile clients:</span>
+                        <span class="mobile-label" lang-zh>移动端远控:</span>
+                        <div class="store-badges">
+                            <a href="https://apps.apple.com/app/flux-remote/id6761290185" class="app-store-badge">
+                                <img src="public/app-store-badge-en.svg" alt="Download on the App Store" lang-en>
+                                <img src="public/app-store-badge-zh.svg" alt="在 App Store 下载" lang-zh>
+                            </a>
+                            <a href="https://play.google.com/store/apps/details?id=com.ct106.flux_remote" class="app-store-badge play-badge">
+                                <img src="public/en-play-badge.png" alt="Get it on Google Play">
+                            </a>
+                        </div>
                     </div>
                 </div>
 
@@ -1519,6 +1587,18 @@
             el.style.transition = 'opacity 0.55s ease, transform 0.55s ease';
             observer.observe(el);
         });
+
+        function copyHomebrewCommand(el) {
+            const cmd = "brew install --cask chentao1006/tap/flux-monitor";
+            navigator.clipboard.writeText(cmd).then(() => {
+                const btn = el.querySelector('.copy-btn');
+                const originalSvg = btn.innerHTML;
+                btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>';
+                setTimeout(() => {
+                    btn.innerHTML = originalSvg;
+                }, 2000);
+            });
+        }
     </script>
     <script async defer src="https://buttons.github.io/buttons.js"></script>
 </body>
