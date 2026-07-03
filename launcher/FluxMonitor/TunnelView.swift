@@ -607,7 +607,7 @@ struct TunnelView: View {
                         Text(i18n.t("public_url"))
                             .font(.caption)
                             .foregroundColor(.secondary)
-                        HStack(spacing: 8) {
+                        HStack(spacing: 4) {
                             Link(destination: urlObj) {
                                 Text(url)
                                     .font(.subheadline)
@@ -617,8 +617,7 @@ struct TunnelView: View {
                             
                             Button(action: { showingQRPopover.toggle() }) {
                                 Image(systemName: "qrcode")
-                                    .font(.subheadline)
-                                    .foregroundColor(.blue)
+                                    .foregroundColor(.secondary)
                             }
                             .buttonStyle(.plain)
                             .help(i18n.t("mqtt_qr_title"))

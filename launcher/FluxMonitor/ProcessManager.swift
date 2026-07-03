@@ -5,6 +5,7 @@ class ProcessManager: ObservableObject {
     static let shared = ProcessManager()
     
     private var process: Process?
+    private var externalPID: Int?
     @Published var isRunning = false
     private var startCount = 0 // Safety against infinite recursion
     @Published var logs = "" {
@@ -50,6 +51,24 @@ class ProcessManager: ObservableObject {
         if isRunning {
             appendLog("Service is already running.\n")
             return
+        }
+        
+        let port = UserDefaults.standard.integer(forKey: "port") != 0 ? UserDefaults.standard.integer(forKey: "port") : 4210
+        
+        if let pid = getPIDForPort(port) {
+            if isFluxMonitorProcess(pid: pid) {
+                appendLog("Detected existing Flux Monitor service (PID: \(pid)). Taking over.\n")
+                self.externalPID = pid
+                self.isRunning = true
+                DispatchQueue.main.async {
+                    (NSApp.delegate as? AppDelegate)?.updateMenu()
+                }
+                fetchAptabaseKey(port: port)
+                return
+            } else {
+                showPortConflictAlert(port: port, pid: pid)
+                return
+            }
         }
         
         startCount += 1
@@ -222,6 +241,10 @@ class ProcessManager: ObservableObject {
         if let process = self.process, process.isRunning {
             process.terminate()
             appendLog("Sent terminate signal\n")
+        } else if let extPid = self.externalPID {
+            killProcess(pid: extPid)
+            appendLog("Sent kill signal to external process \(extPid)\n")
+            self.externalPID = nil
         }
         // Force the flag update in case terminationHandler is delayed
         isRunning = false
@@ -297,6 +320,110 @@ class ProcessManager: ObservableObject {
         } catch {
             appendLog("[ERROR] Node health check execution error: \(error.localizedDescription)\n")
             return false
+        }
+    }
+    
+    private func getPIDForPort(_ port: Int) -> Int? {
+        let task = Process()
+        task.launchPath = "/usr/sbin/lsof"
+        task.arguments = ["-t", "-i", "tcp:\(port)", "-n", "-P"]
+        let pipe = Pipe()
+        task.standardOutput = pipe
+        
+        do {
+            try task.run()
+            task.waitUntilExit()
+            let data = pipe.fileHandleForReading.readDataToEndOfFile()
+            if let output = String(data: data, encoding: .utf8)?.trimmingCharacters(in: .whitespacesAndNewlines), !output.isEmpty {
+                if let firstPidStr = output.components(separatedBy: .newlines).first, let pid = Int(firstPidStr) {
+                    return pid
+                }
+            }
+        } catch {
+            return nil
+        }
+        return nil
+    }
+    
+    private func getProcessInfo(pid: Int) -> String? {
+        let task = Process()
+        task.launchPath = "/bin/ps"
+        task.arguments = ["-p", "\(pid)", "-ww", "-o", "command="]
+        let pipe = Pipe()
+        task.standardOutput = pipe
+        
+        do {
+            try task.run()
+            task.waitUntilExit()
+            let data = pipe.fileHandleForReading.readDataToEndOfFile()
+            if let output = String(data: data, encoding: .utf8)?.trimmingCharacters(in: .whitespacesAndNewlines), !output.isEmpty {
+                return output
+            }
+        } catch {
+            return nil
+        }
+        return nil
+    }
+    
+    private func isFluxMonitorProcess(pid: Int) -> Bool {
+        let task = Process()
+        task.launchPath = "/usr/sbin/lsof"
+        task.arguments = ["-p", "\(pid)", "-a", "-d", "cwd", "-F", "n"]
+        let pipe = Pipe()
+        task.standardOutput = pipe
+        
+        do {
+            try task.run()
+            task.waitUntilExit()
+            let data = pipe.fileHandleForReading.readDataToEndOfFile()
+            if let output = String(data: data, encoding: .utf8) {
+                if output.contains("Flux Monitor") || output.contains("FluxMonitor") || output.contains("flux-monitor") {
+                    return true
+                }
+            }
+        } catch {
+        }
+        
+        if let cmd = getProcessInfo(pid: pid) {
+            if cmd.contains("next-server") || cmd.contains("server.js") {
+                return true
+            }
+        }
+        return false
+    }
+    
+    private func killProcess(pid: Int) {
+        let task = Process()
+        task.launchPath = "/bin/kill"
+        task.arguments = ["-9", "\(pid)"]
+        try? task.run()
+        task.waitUntilExit()
+    }
+    
+    private func showPortConflictAlert(port: Int, pid: Int) {
+        let processInfo = getProcessInfo(pid: pid) ?? "Unknown Process"
+        DispatchQueue.main.async {
+            let alert = NSAlert()
+            let translatedTitle = I18N.shared.t("port_conflict")
+            alert.messageText = translatedTitle == "port_conflict" ? "Port Conflict (端口冲突)" : translatedTitle
+            
+            let infoText = "端口 (Port) \(port) 正被其他进程占用 (is being used by another process):\n\nPID: \(pid)\nCommand: \(processInfo)\n\n您要强行终止该进程，还是修改端口？\n(Do you want to forcefully terminate it or change your port?)"
+            
+            alert.informativeText = infoText
+            alert.addButton(withTitle: "强行终止 (Force Terminate)")
+            alert.addButton(withTitle: "修改端口 (Change Port)")
+            
+            let response = alert.runModal()
+            if response == .alertFirstButtonReturn {
+                self.killProcess(pid: pid)
+                self.appendLog("Forcefully terminated PID \(pid).\n")
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+                    self.start()
+                }
+            } else {
+                self.appendLog("Port conflict not resolved. Service start aborted.\n")
+                self.isRunning = false
+            }
         }
     }
 }
