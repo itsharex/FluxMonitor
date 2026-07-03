@@ -39,7 +39,7 @@ class MQTTRemoteSync: ObservableObject {
     
     var pairingURI: String {
         let encodedKey = aesKeyBase64.addingPercentEncoding(withAllowedCharacters: .alphanumerics) ?? aesKeyBase64
-        return "https://chentao1006.github.io/FluxRemote/connect.html?topic=\(topicID)&key=\(encodedKey)"
+        return "https://flux.ct106.com/connect.html?topic=\(topicID)&key=\(encodedKey)"
     }
     
     // --- MQTT Broker Failover ---

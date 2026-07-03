@@ -269,7 +269,6 @@ class TunnelManager: ObservableObject {
     private var isRetrying = false
     
     private var lastStartPort: Int = 4210
-    private var lastStartSubdomain: String = ""
     private var restartTimer: Timer?
     
     private let urlRegex = try! NSRegularExpression(pattern: #"(https:\/\/[a-zA-Z0-9\-\.]+\.instatunnel\.my)"#, options: [])
@@ -289,9 +288,8 @@ class TunnelManager: ObservableObject {
         }
     }
     
-    func start(port: Int, subdomain: String = "") {
+    func start(port: Int) {
         self.lastStartPort = port
-        self.lastStartSubdomain = subdomain
         
         if logs.isEmpty { appendLog("Starting InstaTunnel...\n") }
         
@@ -327,11 +325,11 @@ class TunnelManager: ObservableObject {
             if !isRetrying {
                 self.retryCount = 0
             }
-            self.launchProcess(binaryPath: binaryPath, port: port, subdomain: subdomain)
+            self.launchProcess(binaryPath: binaryPath, port: port)
         }
     }
     
-    private func launchProcess(binaryPath: String, port: Int, subdomain: String) {
+    private func launchProcess(binaryPath: String, port: Int) {
         let executableURL = URL(fileURLWithPath: binaryPath)
         
         DispatchQueue.main.async {
@@ -355,9 +353,6 @@ class TunnelManager: ObservableObject {
         process.environment = env
         
         var args = [String(port)]
-        if !subdomain.isEmpty {
-            args.append(contentsOf: ["--subdomain", subdomain])
-        }
         process.arguments = args
         
         
@@ -382,7 +377,7 @@ class TunnelManager: ObservableObject {
                 if exitStatus != 0 {
                     self.status = .error("Exit code \(exitStatus)")
                     // Auto-restart on error
-                    self.handleRetry(port: self.lastStartPort, subdomain: self.lastStartSubdomain)
+                    self.handleRetry(port: self.lastStartPort)
                 } else {
                     self.status = .stopped
                 }
@@ -401,7 +396,7 @@ class TunnelManager: ObservableObject {
         }
     }
     
-    private func handleRetry(port: Int, subdomain: String) {
+    private func handleRetry(port: Int) {
         guard retryCount < maxRetries else {
             self.isRetrying = false
             self.retryCount = 0
@@ -413,7 +408,7 @@ class TunnelManager: ObservableObject {
         
         DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
             self.appendLog("Retrying (\(self.retryCount)/\(self.maxRetries))...\n")
-            self.start(port: port, subdomain: subdomain)
+            self.start(port: port)
         }
     }
     
@@ -436,7 +431,7 @@ class TunnelManager: ObservableObject {
         appendLog("Restarting tunnel...\n")
         stop()
         DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
-            self.start(port: self.lastStartPort, subdomain: self.lastStartSubdomain)
+            self.start(port: self.lastStartPort)
         }
     }
     
@@ -467,12 +462,8 @@ class TunnelManager: ObservableObject {
             DispatchQueue.main.async {
                 self.appendLog("Subdomain already taken. Will retry in 2 seconds...\n")
                 if let p = self.process, let args = p.arguments, let portStr = args.first, let port = Int(portStr) {
-                    var subdomain = ""
-                    if args.count >= 3 && args[1] == "--subdomain" {
-                        subdomain = args[2]
-                    }
                     self.stop()
-                    self.handleRetry(port: port, subdomain: subdomain)
+                    self.handleRetry(port: port)
                 }
             }
             return
@@ -564,7 +555,6 @@ struct TunnelView: View {
     @StateObject var tunnelManager = TunnelManager.shared
     @StateObject var downloader = InstaTunnelDownloader.shared
     
-    @AppStorage("tunnelSubdomain") private var tunnelSubdomain: String = ""
     @AppStorage("port") private var localPort: Int = 4210
     
     @State private var showingQRPopover = false
@@ -677,16 +667,6 @@ struct TunnelView: View {
                 .font(.caption)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
-            
-            VStack(alignment: .leading, spacing: 8) {
-                Text(i18n.t("tunnel_subdomain"))
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-                
-                TextField(i18n.t("tunnel_subdomain_placeholder"), text: $tunnelSubdomain)
-                    .textFieldStyle(.roundedBorder)
-            }
-            .disabled(tunnelManager.status.isRunning || tunnelManager.status == .starting)
             
             Divider()
                 .padding(.vertical, 4)
@@ -838,11 +818,11 @@ struct TunnelView: View {
         if !downloader.isInstalled() {
             downloader.checkAndDownloadIfNeeded { success in
                 if success {
-                    tunnelManager.start(port: localPort, subdomain: tunnelSubdomain)
+                    tunnelManager.start(port: localPort)
                 }
             }
         } else {
-            tunnelManager.start(port: localPort, subdomain: tunnelSubdomain)
+            tunnelManager.start(port: localPort)
         }
     }
 }

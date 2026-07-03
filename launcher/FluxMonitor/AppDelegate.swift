@@ -118,12 +118,11 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
             // Auto-start tunnel if enabled
             if UserDefaults.standard.bool(forKey: "autoStartTunnel") {
                 let port = UserDefaults.standard.integer(forKey: "port") != 0 ? UserDefaults.standard.integer(forKey: "port") : 4210
-                let subdomain = UserDefaults.standard.string(forKey: "tunnelSubdomain") ?? ""
                 
                 // Delay to allow service to bind if it's already installed
                 // Waiting 5 seconds as requested to ensure local service is up
                 DispatchQueue.main.asyncAfter(deadline: .now() + 5.0) {
-                    TunnelManager.shared.start(port: port, subdomain: subdomain)
+                    TunnelManager.shared.start(port: port)
                 }
             }
         }
