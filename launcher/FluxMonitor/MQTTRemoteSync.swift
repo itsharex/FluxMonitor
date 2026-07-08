@@ -72,6 +72,7 @@ class MQTTRemoteSync: ObservableObject {
     private var pendingURL: String? = nil
     private var connectTimeoutWorkItem: DispatchWorkItem?
     private var isConnecting: Bool = false
+    private var connectionID: Int = 0
     
     private let mqttKeepAlive: UInt16 = 60 // seconds
     
@@ -85,6 +86,13 @@ class MQTTRemoteSync: ObservableObject {
     
     /// Called whenever the tunnel URL changes. Encrypts and publishes.
     func publishURL(_ url: String) {
+        if !Thread.isMainThread {
+            DispatchQueue.main.async {
+                self.publishURL(url)
+            }
+            return
+        }
+
         guard !url.isEmpty else { return }
         
         pendingURL = url
@@ -120,6 +128,14 @@ class MQTTRemoteSync: ObservableObject {
     
     /// Disconnect and clean up
     func disconnect() {
+        if !Thread.isMainThread {
+            DispatchQueue.main.async {
+                self.disconnect()
+            }
+            return
+        }
+
+        connectionID += 1
         keepAliveTimer?.invalidate()
         keepAliveTimer = nil
         connectTimeoutWorkItem?.cancel()
@@ -129,14 +145,19 @@ class MQTTRemoteSync: ObservableObject {
         urlSession?.invalidateAndCancel()
         urlSession = nil
         isConnecting = false
-        DispatchQueue.main.async {
-            self.isConnected = false
-        }
+        isConnected = false
     }
     
     // MARK: - Connection
     
     private func connectToNextBroker() {
+        if !Thread.isMainThread {
+            DispatchQueue.main.async {
+                self.connectToNextBroker()
+            }
+            return
+        }
+
         guard currentBrokerIndex < brokers.count else {
             currentBrokerIndex = 0
             log("All MQTT brokers failed. Will retry on next URL change.")
@@ -147,6 +168,8 @@ class MQTTRemoteSync: ObservableObject {
         let broker = brokers[currentBrokerIndex]
         log("Connecting to MQTT broker: \(broker.host)...")
         isConnecting = true
+        connectionID += 1
+        let connectionID = self.connectionID
         
         guard let url = URL(string: broker.urlString) else {
             log("Invalid broker URL: \(broker.urlString)")
@@ -167,28 +190,37 @@ class MQTTRemoteSync: ObservableObject {
         var request = URLRequest(url: url)
         request.setValue("mqtt", forHTTPHeaderField: "Sec-WebSocket-Protocol")
         
-        webSocketTask = urlSession?.webSocketTask(with: request)
-        webSocketTask?.resume()
+        guard let task = urlSession?.webSocketTask(with: request) else {
+            log("Failed to create MQTT WebSocket task")
+            currentBrokerIndex += 1
+            connectToNextBroker()
+            return
+        }
+        webSocketTask = task
+        task.resume()
         
         // Set a connect timeout
         let timeout = DispatchWorkItem { [weak self] in
             guard let self = self else { return }
-            self.log("MQTT broker \(broker.host) connection timed out")
-            self.webSocketTask?.cancel(with: .goingAway, reason: nil)
-            self.currentBrokerIndex += 1
-            self.connectToNextBroker()
+            DispatchQueue.main.async {
+                guard self.connectionID == connectionID, self.isConnecting else { return }
+                self.log("MQTT broker \(broker.host) connection timed out")
+                self.webSocketTask?.cancel(with: .goingAway, reason: nil)
+                self.currentBrokerIndex += 1
+                self.connectToNextBroker()
+            }
         }
         connectTimeoutWorkItem = timeout
         DispatchQueue.main.asyncAfter(deadline: .now() + 10, execute: timeout)
         
         // Send CONNECT immediately after WebSocket opens
-        sendMQTTConnect()
-        receiveMessage()
+        sendMQTTConnect(connectionID: connectionID)
+        receiveMessage(connectionID: connectionID, task: task)
     }
     
     // MARK: - MQTT Protocol (Minimal 3.1.1)
     
-    private func sendMQTTConnect() {
+    private func sendMQTTConnect(connectionID: Int) {
         // Build MQTT CONNECT packet
         var variableHeader = Data()
         
@@ -215,7 +247,7 @@ class MQTTRemoteSync: ObservableObject {
         packet.appendRemainingLength(body.count)
         packet.append(body)
         
-        sendRawData(packet)
+        sendRawData(packet, connectionID: connectionID)
     }
     
     private func sendPublish(payload: Data) {
@@ -234,18 +266,15 @@ class MQTTRemoteSync: ObservableObject {
         packet.append(body)
         
         sendRawData(packet) { [weak self] success in
+            guard let self = self else { return }
             if success {
-                DispatchQueue.main.async {
-                    self?.lastPublishTime = Date()
-                }
-                self?.log("MQTT publish success to topic: \(topic)")
+                self.lastPublishTime = Date()
+                self.log("MQTT publish success to topic: \(topic)")
             } else {
-                self?.log("MQTT publish failed. Will reconnect...")
-                DispatchQueue.main.async {
-                    self?.isConnected = false
-                    self?.isConnecting = false
-                    self?.connectToNextBroker()
-                }
+                self.log("MQTT publish failed. Will reconnect...")
+                self.isConnected = false
+                self.isConnecting = false
+                self.connectToNextBroker()
             }
         }
     }
@@ -255,42 +284,47 @@ class MQTTRemoteSync: ObservableObject {
         sendRawData(Data([0xC0, 0x00]))
     }
     
-    private func sendRawData(_ data: Data, completion: ((Bool) -> Void)? = nil) {
-        webSocketTask?.send(.data(data)) { error in
-            if let error = error {
-                self.log("WebSocket send error: \(error.localizedDescription)")
-                completion?(false)
-            } else {
-                completion?(true)
+    private func sendRawData(_ data: Data, connectionID: Int? = nil, completion: ((Bool) -> Void)? = nil) {
+        let task = webSocketTask
+        let expectedConnectionID = connectionID ?? self.connectionID
+        task?.send(.data(data)) { error in
+            DispatchQueue.main.async {
+                guard self.connectionID == expectedConnectionID else { return }
+                if let error = error {
+                    self.log("WebSocket send error: \(error.localizedDescription)")
+                    completion?(false)
+                } else {
+                    completion?(true)
+                }
             }
         }
     }
     
-    private func receiveMessage() {
-        webSocketTask?.receive { [weak self] result in
+    private func receiveMessage(connectionID: Int, task: URLSessionWebSocketTask) {
+        task.receive { [weak self] result in
             guard let self = self else { return }
-            
-            switch result {
-            case .success(let message):
-                switch message {
-                case .data(let data):
-                    self.handleMQTTPacket(data)
-                case .string(_):
-                    break // MQTT uses binary
-                @unknown default:
-                    break
-                }
-                // Continue receiving
-                self.receiveMessage()
-                
-            case .failure(let error):
-                self.log("WebSocket receive error: \(error.localizedDescription)")
-                DispatchQueue.main.async {
+
+            DispatchQueue.main.async {
+                guard self.connectionID == connectionID else { return }
+
+                switch result {
+                case .success(let message):
+                    switch message {
+                    case .data(let data):
+                        self.handleMQTTPacket(data, connectionID: connectionID)
+                    case .string(_):
+                        break // MQTT uses binary
+                    @unknown default:
+                        break
+                    }
+
+                    // Continue receiving
+                    self.receiveMessage(connectionID: connectionID, task: task)
+
+                case .failure(let error):
+                    self.log("WebSocket receive error: \(error.localizedDescription)")
                     self.isConnected = false
                     self.isConnecting = false
-                }
-                // Try next broker if we weren't already connected
-                if !self.isConnected {
                     self.currentBrokerIndex += 1
                     self.connectToNextBroker()
                 }
@@ -298,7 +332,8 @@ class MQTTRemoteSync: ObservableObject {
         }
     }
     
-    private func handleMQTTPacket(_ data: Data) {
+    private func handleMQTTPacket(_ data: Data, connectionID: Int) {
+        guard self.connectionID == connectionID else { return }
         guard let firstByte = data.first else { return }
         let packetType = firstByte >> 4
         
@@ -310,9 +345,7 @@ class MQTTRemoteSync: ObservableObject {
             if data.count >= 4 && data[3] == 0 {
                 log("MQTT connected successfully")
                 isConnecting = false
-                DispatchQueue.main.async {
-                    self.isConnected = true
-                }
+                isConnected = true
                 startKeepAlive()
                 // Publish pending payload if any
                 if let payload = pendingPublishPayload {
